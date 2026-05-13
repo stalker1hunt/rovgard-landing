@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="uk" data-lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ROVGARD — Browser MMO by Ashgate Studio</title>
+<meta name="description" content="Rovgard — a text-based browser RPG by Ashgate Studio. The classic, reborn. Pre-register for closed alpha — May 2026.">
+<meta property="og:title" content="ROVGARD — Browser MMO by Ashgate Studio">
+<meta property="og:description" content="The classic, reborn. Text-based browser RPG with deep PvP, raids, clan wars, and a full-loot Risk Field.">
+<meta property="og:type" content="website">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,700&family=Cormorant+SC:wght@500;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0908;
+    --bg-2: #131210;
+    --panel: #1a1816;
+    --border: #36302a;
+    --gold: #b89254;
+    --gold-bright: #d4ae6c;
+    --blood: #5a1e1e;
+    --blood-bright: #8e2a2a;
+    --text: #d4c8b0;
+    --text-dim: #8a7a64;
+    --green: #6a8a4a;
+    --ember: #b85f30;
+    --cyan: #4f7d99;
+  }
+  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+  html, body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; }
+
+  /* === Reveal animations === */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1); }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+
+  /* === Global smoothness === */
+  a, button, .panel, .pve-card, input { transition: color 0.25s ease, background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease; }
+
+  /* === Back-to-top sword button === */
+  #back-to-top {
+    position: fixed; right: 20px; bottom: 20px; z-index: 60;
+    width: 48px; height: 64px;
+    display: grid; place-items: center;
+    background: linear-gradient(180deg, rgba(20,16,12,0.85), rgba(10,8,6,0.85));
+    border: 1px solid #36302a;
+    color: #b89254;
+    cursor: pointer;
+    opacity: 0; pointer-events: none;
+    transform: translateY(10px);
+    transition: opacity 0.4s ease, transform 0.4s ease, color 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+    backdrop-filter: blur(8px);
+  }
+  #back-to-top.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  #back-to-top:hover { color: #d4ae6c; border-color: #b89254; background: linear-gradient(180deg, rgba(30,24,18,0.9), rgba(15,12,10,0.9)); }
+  #back-to-top:hover svg { transform: translateY(-4px); }
+  #back-to-top svg { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+  #back-to-top::before, #back-to-top::after {
+    content: ''; position: absolute; width: 5px; height: 5px;
+    border: 1px solid currentColor; opacity: 0.8;
+  }
+  #back-to-top::before { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+  #back-to-top::after { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+  /* === Class sigil (heraldic plaque) === */
+  .class-sigil {
+    width: 64px; height: 84px;
+    margin: 0 auto;
+    display: grid; place-items: center;
+    border: 1px solid #36302a;
+    background: linear-gradient(180deg, rgba(184,146,84,0.04), transparent);
+    position: relative;
+    color: #d4ae6c;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+  }
+  .class-sigil::before, .class-sigil::after {
+    content: ''; position: absolute; width: 6px; height: 6px;
+    border: 1px solid #b89254; opacity: 0.7;
+  }
+  .class-sigil::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+  .class-sigil::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+  .panel:hover .class-sigil { border-color: #b89254; transform: translateY(-2px); }
+  .class-card { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease; }
+  .class-card:hover { transform: translateY(-4px); }
+
+  /* Class card — locked / beta-only */
+  .class-locked { opacity: 0.5; filter: grayscale(0.7); }
+  .class-locked::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(-45deg, transparent 0 14px, rgba(58,49,40,0.08) 14px 28px);
+  }
+  .class-locked:hover { opacity: 0.75; filter: grayscale(0.3); }
+  .lock-badge {
+    position: absolute; top: 10px; right: 10px;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px;
+    border: 1px solid #36302a;
+    background: rgba(0,0,0,0.7);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #8a7a64;
+    z-index: 2;
+  }
+
+  /* === Subtle entrance hover on cards === */
+  .panel { transition: border-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease; }
+  .panel:hover { border-color: rgba(184,146,84,0.4); }
+
+  /* === Hover lift for pillar/pve cards === */
+  #about .panel:hover, .pve-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px -12px rgba(184,146,84,0.15); }
+
+  /* === Smooth nav underline === */
+  nav a { position: relative; padding-bottom: 2px; }
+  nav a::after {
+    content: ''; position: absolute; left: 0; bottom: -2px;
+    width: 100%; height: 1px; background: currentColor;
+    transform: scaleX(0); transform-origin: right;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  nav a:hover::after { transform: scaleX(1); transform-origin: left; }
+
+  /* === Sigil hover spin === */
+  .sigil svg { transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+  .panel:hover .sigil svg, .pve-card:hover .sigil svg { transform: rotate(-8deg) scale(1.08); }
+
+  /* === Stat bar shimmer (very subtle) === */
+  @keyframes barShimmer {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.15); }
+  }
+  .bar-shimmer { animation: barShimmer 4s ease-in-out infinite; }
+
+  /* === Pulse on alpha countdown === */
+  @keyframes softPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.75; }
+  }
+  .soft-pulse { animation: softPulse 3s ease-in-out infinite; }
+
+  /* === Smooth CTA button hover === */
+  .btn-gold { transition: filter 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease; }
+  .btn-gold:hover { transform: translateY(-1px); }
+  .btn-gold:active { transform: translateY(0); }
+
+  /* === Final CTA heading float === */
+  @keyframes floatGentle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; }
+    .sigil svg, .panel, .pve-card, .btn-gold { transition: none !important; animation: none !important; }
+  }
+  .font-display { font-family: 'Cormorant Garamond', 'Cormorant SC', Georgia, serif; letter-spacing: -0.005em; font-feature-settings: "lnum", "ss01"; }
+  .font-display-sc { font-family: 'Cormorant SC', 'Cormorant Garamond', Georgia, serif; letter-spacing: 0.04em; }
+  .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; }
+
+  /* sigil — bordered icon container, replaces emoji */
+  .sigil {
+    width: 56px; height: 56px;
+    display: grid; place-items: center;
+    border: 1px solid currentColor;
+    background: rgba(0,0,0,0.3);
+    position: relative;
+  }
+  .sigil::before, .sigil::after {
+    content: ''; position: absolute; width: 6px; height: 6px;
+    border: 1px solid currentColor; opacity: 0.8;
+  }
+  .sigil::before { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+  .sigil::after { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+  /* ---- i18n toggle ---- */
+  html[data-lang="uk"] [data-lang="en"] { display: none !important; }
+  html[data-lang="en"] [data-lang="uk"] { display: none !important; }
+  html[data-lang="uk"] #lang-uk { color: var(--gold-bright); }
+  html[data-lang="uk"] #lang-en { color: var(--text-dim); }
+  html[data-lang="en"] #lang-en { color: var(--gold-bright); }
+  html[data-lang="en"] #lang-uk { color: var(--text-dim); }
+
+  .bg-noise {
+    background-image:
+      radial-gradient(ellipse at top, rgba(90,30,30,0.18), transparent 60%),
+      radial-gradient(ellipse at bottom, rgba(184,146,84,0.06), transparent 70%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.05 0 0 0 0 0.04 0 0 0 0 0.03 0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .panel {
+    background: linear-gradient(180deg, var(--panel), #100c09);
+    border: 1px solid var(--border);
+    position: relative;
+  }
+  .panel::before, .panel::after {
+    content: ''; position: absolute; width: 14px; height: 14px;
+    border: 2px solid var(--gold); opacity: 0.6;
+  }
+  .panel::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+  .panel::after  { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+  .panel-red {
+    background: linear-gradient(180deg, #140a0a, #080404);
+    border: 1px solid #3e1414;
+  }
+  .panel-red::before, .panel-red::after { border-color: var(--blood-bright); }
+
+  .panel-gold {
+    background: linear-gradient(180deg, #171311, #0a0807);
+    border: 1px solid #54452a;
+  }
+  .panel-gold::before, .panel-gold::after { border-color: var(--gold-bright); }
+
+  .gold-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold) 50%, transparent);
+    opacity: 0.5;
+  }
+  .btn-gold {
+    background: linear-gradient(180deg, #b89254, #6a5224);
+    color: #1a1208;
+    border: 1px solid #d4ae6c;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 0 24px rgba(184,146,84,0.25);
+    text-shadow: 0 1px 0 rgba(255,255,255,0.2);
+    cursor: pointer;
+  }
+  .btn-gold:hover { filter: brightness(1.1); box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 0 32px rgba(212,174,108,0.45); }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold-bright);
+    cursor: pointer;
+  }
+  .btn-ghost:hover { background: rgba(184,146,84,0.08); }
+
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 50% { opacity: 0.5; } }
+
+  .stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed rgba(58,42,28,0.6); }
+  .stat-row:last-child { border-bottom: none; }
+
+  .combat-log p { margin: 2px 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; }
+  .log-time { color: var(--text-dim); }
+  .log-hit { color: var(--blood-bright); }
+  .log-crit { color: var(--ember); font-weight: 600; }
+  .log-miss { color: var(--text-dim); }
+  .log-system { color: var(--gold); }
+
+  .hero-bg {
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(90,30,30,0.4), transparent),
+      radial-gradient(ellipse 60% 40% at 50% 100%, rgba(0,0,0,0.8), transparent);
+  }
+
+  .scroll-frame {
+    position: relative; padding: 12px;
+    background: var(--bg-2);
+    border-top: 2px solid var(--gold); border-bottom: 2px solid var(--gold);
+  }
+  .scroll-frame::before, .scroll-frame::after {
+    content: ''; position: absolute; left: 0; right: 0; height: 4px;
+    background: repeating-linear-gradient(90deg, var(--gold) 0 6px, transparent 6px 12px);
+    opacity: 0.4;
+  }
+  .scroll-frame::before { top: -6px; }
+  .scroll-frame::after { bottom: -6px; }
+
+  .glow-text { text-shadow: 0 0 18px rgba(184,146,84,0.5); }
+  .blood-text { color: var(--blood-bright); text-shadow: 0 0 14px rgba(142,42,42,0.5); }
+  .blood-glow { text-shadow: 0 0 24px rgba(142,42,42,0.7), 0 0 4px rgba(142,42,42,1); }
+
+  .clan-row { display: grid; grid-template-columns: 32px 1fr 60px 80px 1fr; gap: 12px; align-items: center; padding: 10px 12px; border-top: 1px solid rgba(58,42,28,0.6); }
+  .clan-row:first-of-type { border-top: none; }
+  .castle-badge { background: rgba(184,146,84,0.1); border: 1px solid var(--border); padding: 2px 8px; font-size: 11px; color: var(--gold-bright); }
+
+  .hazard-stripe {
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(142,42,42,0.15) 0,
+      rgba(142,42,42,0.15) 12px,
+      rgba(10,4,4,0.4) 12px,
+      rgba(10,4,4,0.4) 24px
+    );
+  }
+
+  .pve-card { transition: transform 0.2s ease, border-color 0.2s ease; }
+  .pve-card:hover { transform: translateY(-4px); border-color: var(--gold); }
+
+  .perk-row { display: flex; align-items: start; gap: 16px; padding: 14px 0; border-bottom: 1px dashed rgba(58,42,28,0.5); }
+  .perk-row:last-child { border-bottom: none; }
+  .perk-icon { font-size: 28px; line-height: 1; flex-shrink: 0; }
+
+  .vs-list li { padding: 8px 0; border-bottom: 1px dashed rgba(58,42,28,0.5); font-size: 14px; }
+  .vs-list li:last-child { border-bottom: none; }
+  .vs-list .marker { display: inline-block; width: 14px; margin-right: 8px; }
+</style>
+</head>
+<body class="bg-noise min-h-screen">
+
+<!-- ============ TOP BAR ============ -->
+<header class="border-b border-[#36302a]/60 backdrop-blur-sm bg-black/40 sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between text-sm">
+    <a href="#" class="flex items-center gap-3 hover:opacity-90 transition-opacity">
+      <div class="w-9 h-9 rounded-sm bg-gradient-to-br from-[#5a1e1e] to-[#3a0a0a] border border-[#b89254] grid place-items-center font-display font-bold text-[#d4ae6c] text-lg leading-none">R</div>
+      <div>
+        <div class="font-display font-bold text-[#d4ae6c] tracking-[0.22em] leading-none">ROVGARD</div>
+        <div class="font-mono text-[10px] text-[#8a7a64] mt-1 tracking-wider">by <span class="text-[#a89880]">Ashgate Studio</span></div>
+      </div>
+    </a>
+
+    <nav class="hidden md:flex items-center gap-5 font-mono text-xs uppercase text-[#a89880]">
+      <a href="#about" class="hover:text-[#d4ae6c]"><span data-lang="uk">Про</span><span data-lang="en">About</span></a>
+      <a href="#classes" class="hover:text-[#d4ae6c]"><span data-lang="uk">Класи</span><span data-lang="en">Classes</span></a>
+      <a href="#combat" class="hover:text-[#d4ae6c]"><span data-lang="uk">Бій</span><span data-lang="en">Combat</span></a>
+      <a href="#pve" class="hover:text-[#d4ae6c]">PvE</a>
+      <a href="#auction" class="hover:text-[#d4ae6c]"><span data-lang="uk">Аукціон</span><span data-lang="en">Auction</span></a>
+      <a href="#risk" class="hover:text-[#8e2a2a]"><span data-lang="uk">Ризик</span><span data-lang="en">Risk</span></a>
+      <a href="#clans" class="hover:text-[#d4ae6c]"><span data-lang="uk">Клани</span><span data-lang="en">Clans</span></a>
+      <a href="#alpha" class="hover:text-[#d4ae6c]"><span data-lang="uk">Альфа</span><span data-lang="en">Alpha</span></a>
+    </nav>
+
+    <div class="flex items-center gap-4">
+      <div class="hidden sm:flex items-center gap-2">
+        <span class="status-dot"></span>
+        <span class="font-mono text-xs text-[#a89880]">
+          <span data-lang="uk">сервер: <span class="text-[#d4ae6c]">альфа</span></span>
+          <span data-lang="en">server: <span class="text-[#d4ae6c]">alpha</span></span>
+        </span>
+      </div>
+      <div class="flex items-center font-mono text-xs border border-[#36302a] bg-black/30">
+        <button id="lang-uk" type="button" class="px-2.5 py-1 transition-colors">UA</button>
+        <span class="text-[#36302a]">|</span>
+        <button id="lang-en" type="button" class="px-2.5 py-1 transition-colors">EN</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero-bg relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 py-20 md:py-28 grid md:grid-cols-2 gap-12 items-center">
+
+    <div>
+      <div class="inline-flex items-center gap-2 px-3 py-1 border border-[#36302a] bg-black/40 font-mono text-[11px] uppercase tracking-widest text-[#b89254]">
+        <span class="w-1.5 h-1.5 bg-[#b89254]"></span>
+        <span data-lang="uk">Пре-реєстрація · альфа · травень 2026</span>
+        <span data-lang="en">Pre-registration · alpha · May 2026</span>
+      </div>
+
+      <h1 class="font-display font-medium text-5xl md:text-7xl leading-[0.95] mt-6 text-[#e8dcc0] glow-text break-words">
+        <span data-lang="uk">КЛАСИКА.<br/><span class="blood-text">ВІДРОДЖЕНА.</span></span>
+        <span data-lang="en">THE CLASSIC.<br/><span class="blood-text">REBORN.</span></span>
+      </h1>
+
+      <p class="mt-6 text-lg text-[#a89880] max-w-lg leading-relaxed">
+        <span data-lang="uk">Текстова браузерна RPG для тих, хто виріс на Classic WoW, Perfect World і Guild Wars. <span class="text-[#d4ae6c]">Та сама глибина</span> — з сучасною бойовкою, мобілкою і чесним балансом.</span>
+        <span data-lang="en">A text-based browser RPG for those who grew up on Classic WoW, Perfect World, and Guild Wars. <span class="text-[#d4ae6c]">The same depth</span> — with modern combat, mobile, and fair balance.</span>
+      </p>
+
+      <form class="mt-8 panel p-5" onsubmit="event.preventDefault(); alert('OK');">
+        <div class="font-mono text-[11px] uppercase tracking-widest text-[#b89254] mb-3">
+          <span data-lang="uk">[ зайняти ім'я в реєстрі ]</span>
+          <span data-lang="en">[ claim your spot in the registry ]</span>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input type="email" required
+                 data-placeholder-uk="твоя.пошта@..."
+                 data-placeholder-en="your.email@..."
+                 class="flex-1 bg-black/60 border border-[#36302a] px-4 py-3 font-mono text-sm text-[#e8dcc0] placeholder:text-[#5a4a38] focus:outline-none focus:border-[#b89254]"/>
+          <button type="submit" class="btn-gold font-display font-bold uppercase tracking-widest px-6 py-3 text-sm">
+            <span data-lang="uk">Зайняти місце</span>
+            <span data-lang="en">Claim spot</span>
+          </button>
+        </div>
+        <div class="mt-3 flex items-center justify-between text-xs font-mono text-[#8a7a64] flex-wrap gap-2">
+          <span>
+            <span data-lang="uk">Без спаму. Один лист — коли стартуємо.</span>
+            <span data-lang="en">No spam. One email — when we go live.</span>
+          </span>
+          <span class="text-[#d4ae6c]">
+            <span data-lang="uk">+ титул «ЗАСНОВНИК»</span>
+            <span data-lang="en">+ "FOUNDER" title</span>
+          </span>
+        </div>
+      </form>
+
+      <div class="mt-6 flex items-center gap-6 text-sm">
+        <div>
+          <div class="font-display font-black text-2xl text-[#d4ae6c]">1 247</div>
+          <div class="font-mono text-[10px] uppercase text-[#8a7a64]">
+            <span data-lang="uk">бійців у реєстрі</span><span data-lang="en">fighters registered</span>
+          </div>
+        </div>
+        <div class="w-px h-10 bg-[#36302a]"></div>
+        <div>
+          <div class="font-display font-black text-2xl text-[#d4ae6c]">14</div>
+          <div class="font-mono text-[10px] uppercase text-[#8a7a64]">
+            <span data-lang="uk">днів до альфи</span><span data-lang="en">days to alpha</span>
+          </div>
+        </div>
+        <div class="w-px h-10 bg-[#36302a]"></div>
+        <div>
+          <div class="font-display font-black text-2xl text-[#d4ae6c]">10+</div>
+          <div class="font-mono text-[10px] uppercase text-[#8a7a64]">
+            <span data-lang="uk">років досвіду команди</span><span data-lang="en">years of team exp</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: character sheet mock -->
+    <div class="panel p-6 relative">
+      <div class="font-mono text-[11px] uppercase tracking-widest text-[#b89254] mb-4 flex justify-between">
+        <span><span data-lang="uk">[ персонаж #001 ]</span><span data-lang="en">[ character #001 ]</span></span>
+        <span>lvl 47</span>
+      </div>
+
+      <div class="flex items-start gap-5 mb-5">
+        <!-- conceptual sigil — heraldic emblem, not literal -->
+        <div class="w-24 h-32 bg-gradient-to-b from-[#241c16] to-[#0a0908] border border-[#36302a] grid place-items-center relative shrink-0 overflow-hidden">
+          <svg viewBox="0 0 80 110" fill="none" stroke="#b89254" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full opacity-90">
+            <!-- outer hexagonal frame -->
+            <path d="M40 6 L70 20 V70 L40 100 L10 70 V20 Z" stroke-width="1" opacity="0.4"/>
+            <!-- inner circle -->
+            <circle cx="40" cy="55" r="24" stroke-width="0.6" opacity="0.3"/>
+            <circle cx="40" cy="55" r="20"/>
+            <!-- central vertical line (sword spine) -->
+            <line x1="40" y1="20" x2="40" y2="90" stroke-width="1.2" stroke="#8e2a2a"/>
+            <!-- crossguard -->
+            <line x1="28" y1="38" x2="52" y2="38" stroke-width="1.5" stroke="#b89254"/>
+            <!-- pommel -->
+            <circle cx="40" cy="20" r="2.5" fill="#8e2a2a" stroke="none"/>
+            <!-- blade tip -->
+            <path d="M36 88 L40 96 L44 88" stroke-width="1" stroke="#8e2a2a"/>
+            <!-- ornamental dots -->
+            <circle cx="40" cy="55" r="1.5" fill="#d4ae6c" stroke="none"/>
+            <circle cx="22" cy="55" r="0.8" fill="#b89254" stroke="none" opacity="0.7"/>
+            <circle cx="58" cy="55" r="0.8" fill="#b89254" stroke="none" opacity="0.7"/>
+            <!-- thin runic marks -->
+            <line x1="40" y1="78" x2="40" y2="82" stroke="#d4ae6c" stroke-width="0.6"/>
+            <line x1="36" y1="80" x2="44" y2="80" stroke="#d4ae6c" stroke-width="0.6"/>
+          </svg>
+          <!-- corner ticks -->
+          <span class="absolute top-1 left-1 w-2 h-2 border-t border-l border-[#b89254]/60"></span>
+          <span class="absolute top-1 right-1 w-2 h-2 border-t border-r border-[#b89254]/60"></span>
+          <span class="absolute bottom-1 left-1 w-2 h-2 border-b border-l border-[#b89254]/60"></span>
+          <span class="absolute bottom-1 right-1 w-2 h-2 border-b border-r border-[#b89254]/60"></span>
+        </div>
+
+        <div class="flex-1 min-w-0">
+          <div class="font-display font-bold text-3xl text-[#d4ae6c] leading-none mb-1">Вальдемар</div>
+          <div class="font-mono text-[11px] text-[#8a7a64] mb-2">
+            <span data-lang="uk">Воїн · Клан «Залізні»</span>
+            <span data-lang="en">Warrior · Clan "The Iron"</span>
+          </div>
+          <div class="inline-flex items-center gap-1.5 px-2 py-0.5 border border-[#b89254]/40 bg-[#b89254]/5 text-[10px] font-mono uppercase tracking-widest text-[#d4ae6c] mb-3">
+            <span class="text-[11px]">🏅</span>
+            <span data-lang="uk">Засновник</span><span data-lang="en">Founder</span>
+          </div>
+          <div class="space-y-1 text-sm">
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[10px] text-[#8a7a64] w-8">HP</span>
+              <div class="flex-1 h-2 bg-black border border-[#36302a]"><div class="h-full bg-gradient-to-r from-[#5a1e1e] to-[#8e2a2a] bar-shimmer" style="width: 72%"></div></div>
+              <span class="font-mono text-xs text-[#8e2a2a]">418/580</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[10px] text-[#8a7a64] w-8">MP</span>
+              <div class="flex-1 h-2 bg-black border border-[#36302a]"><div class="h-full bg-gradient-to-r from-[#1a4a8b] to-[#4f7d99]" style="width: 45%"></div></div>
+              <span class="font-mono text-xs text-[#4f7d99]">90/200</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[10px] text-[#8a7a64] w-8">XP</span>
+              <div class="flex-1 h-2 bg-black border border-[#36302a]"><div class="h-full bg-gradient-to-r from-[#6a8a4a] to-[#94b566]" style="width: 84%"></div></div>
+              <span class="font-mono text-xs text-[#94b566]">21k/25k</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="gold-divider mb-4"></div>
+
+      <div class="grid grid-cols-2 gap-x-6 text-sm">
+        <div class="stat-row"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">СИЛА</span><span data-lang="en">STR</span></span><span class="font-mono text-[#e8dcc0]">142</span></div>
+        <div class="stat-row"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">СПРИТНІСТЬ</span><span data-lang="en">AGI</span></span><span class="font-mono text-[#e8dcc0]">88</span></div>
+        <div class="stat-row"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">ВИТРИВАЛІСТЬ</span><span data-lang="en">VIT</span></span><span class="font-mono text-[#e8dcc0]">120</span></div>
+        <div class="stat-row"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">ІНТЕЛЕКТ</span><span data-lang="en">INT</span></span><span class="font-mono text-[#e8dcc0]">34</span></div>
+        <div class="stat-row"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">УДАЧА</span><span data-lang="en">LUCK</span></span><span class="font-mono text-[#d4ae6c]">+12 ★</span></div>
+        <div class="stat-row"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">КРИТ</span><span data-lang="en">CRIT</span></span><span class="font-mono text-[#8e2a2a]">18%</span></div>
+      </div>
+
+      <div class="mt-5 p-3 bg-black/40 border border-[#36302a]">
+        <div class="font-mono text-[10px] uppercase text-[#8a7a64] mb-1"><span data-lang="uk">останній бій</span><span data-lang="en">last battle</span></div>
+        <div class="font-mono text-xs">
+          <span data-lang="uk"><span class="text-[#94b566]">ПЕРЕМОГА</span> vs Грюнвальд · +340 XP · +28 🪙</span>
+          <span data-lang="en"><span class="text-[#94b566]">VICTORY</span> vs Grunwald · +340 XP · +28 🪙</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT / FOUR PILLARS ============ -->
+<section id="about" class="py-20 border-t border-[#36302a]/60">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-14">
+      <div class="font-mono text-xs uppercase tracking-[0.3em] text-[#b89254] mb-3"><span data-lang="uk">[ що це таке ]</span><span data-lang="en">[ what this is ]</span></div>
+      <h2 class="font-display font-black text-4xl md:text-5xl text-[#e8dcc0]">
+        <span data-lang="uk">Та сама гра, яку ти любив. Тільки краще.</span>
+        <span data-lang="en">The same game you loved. Only better.</span>
+      </h2>
+      <p class="text-[#a89880] mt-4 max-w-2xl mx-auto">
+        <span data-lang="uk">Глибина класичних браузерок 2000-х + інтерфейс і баланс, які тримають у грі у 2026. Відкрив у браузері — побився — закрив.</span>
+        <span data-lang="en">The depth of 2000s browser MMOs + the interface and balance that make sense in 2026. Open browser — fight — close.</span>
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="panel p-7">
+        <div class="sigil mb-4 text-[#d4ae6c]">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7">
+            <path d="M8 8 L26 26 M26 26 L24 32 L18 30 L26 26 Z"/>
+            <path d="M40 8 L22 26 M22 26 L24 32 L30 30 L22 26 Z"/>
+            <path d="M5 5 L11 11 M37 5 L43 11"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-bold text-2xl text-[#d4ae6c] mb-2"><span data-lang="uk">Бій як треба</span><span data-lang="en">Combat done right</span></h3>
+        <p class="text-sm text-[#a89880] leading-relaxed">
+          <span data-lang="uk">Дві сторони обирають удари й блоки. Кидки кубиків — у відкритому логу. Кожне число можна перевірити.</span>
+          <span data-lang="en">Two sides pick attacks and blocks. Every dice roll is in the open log — every number checkable.</span>
+        </p>
+        <div class="mt-4 font-mono text-[11px] text-[#b89254]">
+          <span data-lang="uk">→ PvP · PvE · турніри · дуелі</span>
+          <span data-lang="en">→ PvP · PvE · tournaments · duels</span>
+        </div>
+      </div>
+
+      <div class="panel p-7">
+        <div class="sigil mb-4 text-[#d4ae6c]">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7">
+            <path d="M14 38 L26 26"/>
+            <path d="M28 8 L40 20 L34 26 L22 14 Z"/>
+            <path d="M30 6 L42 18"/>
+            <path d="M12 36 L8 40 L10 42 L14 38"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-bold text-2xl text-[#d4ae6c] mb-2"><span data-lang="uk">Глибокі білди</span><span data-lang="en">Deep builds</span></h3>
+        <p class="text-sm text-[#a89880] leading-relaxed">
+          <span data-lang="uk">5 базових стат, 40+ навичок, 200+ предметів. Знайшов комбо — воно твоє.</span>
+          <span data-lang="en">5 base stats, 40+ skills, 200+ items. Find a broken combo — it's yours.</span>
+        </p>
+        <div class="mt-4 font-mono text-[11px] text-[#b89254]">
+          <span data-lang="uk">→ респек дорогий, як і має бути</span>
+          <span data-lang="en">→ respec is costly — as it should be</span>
+        </div>
+      </div>
+
+      <div class="panel p-7">
+        <div class="sigil mb-4 text-[#d4ae6c]">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7">
+            <ellipse cx="18" cy="16" rx="10" ry="4"/>
+            <path d="M8 16 v6 c0 2.2 4.5 4 10 4 s10-1.8 10-4 v-6"/>
+            <ellipse cx="30" cy="30" rx="10" ry="4"/>
+            <path d="M20 30 v6 c0 2.2 4.5 4 10 4 s10-1.8 10-4 v-6"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-bold text-2xl text-[#d4ae6c] mb-2"><span data-lang="uk">Жива економіка</span><span data-lang="en">Living economy</span></h3>
+        <p class="text-sm text-[#a89880] leading-relaxed">
+          <span data-lang="uk">Все потрібне — купується за золото. Заробив у бою, в торгівлі чи на турнірі — витратив на спорядження.</span>
+          <span data-lang="en">Everything you need — buy it for gold. Earn it in battle, trade or tournaments — spend it on gear.</span>
+        </p>
+        <div class="mt-4 font-mono text-[11px] text-[#b89254]">
+          <span data-lang="uk">→ торги · аукціон · крафт</span>
+          <span data-lang="en">→ trade · auction · crafting</span>
+        </div>
+      </div>
+
+      <div class="panel p-7">
+        <div class="sigil mb-4 text-[#d4ae6c]">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7">
+            <path d="M10 6 L10 42"/>
+            <path d="M10 8 C 18 4, 28 12, 38 8 L38 24 C 28 28, 18 20, 10 24 Z"/>
+            <circle cx="22" cy="16" r="2.5" fill="currentColor"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-bold text-2xl text-[#d4ae6c] mb-2"><span data-lang="uk">Клани й війни</span><span data-lang="en">Clans &amp; wars</span></h3>
+        <p class="text-sm text-[#a89880] leading-relaxed">
+          <span data-lang="uk">Збирай людей, бери замки, тримай території. Гра — це люди навколо тебе.</span>
+          <span data-lang="en">Recruit allies, take castles, hold territory. The game is the people around you.</span>
+        </p>
+        <div class="mt-4 font-mono text-[11px] text-[#b89254]">
+          <span data-lang="uk">→ замки · клан-війни · турніри щотижня</span>
+          <span data-lang="en">→ castles · clan wars · weekly tournaments</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CLASSES ============ -->
+<section id="classes" class="py-20 bg-black/30 border-y border-[#36302a]/60">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-14">
+      <div class="font-mono text-xs uppercase tracking-[0.3em] text-[#b89254] mb-3">
+        <span data-lang="uk">[ класи ]</span><span data-lang="en">[ classes ]</span>
+      </div>
+      <h2 class="font-display font-medium text-4xl md:text-5xl text-[#e8dcc0]">
+        <span data-lang="uk">Обери свій шлях</span>
+        <span data-lang="en">Choose your path</span>
+      </h2>
+      <p class="text-[#a89880] mt-4 max-w-2xl mx-auto">
+        <span data-lang="uk">5 класичних архетипів. Кожен — самодостатній у бою, але без них одне одного клан не існує.</span>
+        <span data-lang="en">5 classic archetypes. Each is self-sufficient — but no clan survives without all of them.</span>
+      </p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+
+      <!-- Warrior -->
+      <div class="panel class-card p-6">
+        <div class="class-sigil mb-5">
+          <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-12">
+            <path d="M40 12 L62 18 V40 C 62 54, 52 64, 40 68 C 28 64, 18 54, 18 40 V18 Z" opacity="0.5"/>
+            <line x1="40" y1="20" x2="40" y2="60" stroke-width="1.4"/>
+            <line x1="30" y1="30" x2="50" y2="30" stroke-width="1.6"/>
+            <circle cx="40" cy="20" r="2" fill="currentColor"/>
+            <path d="M37 60 L40 64 L43 60"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-semibold text-2xl text-[#d4ae6c] leading-none">
+          <span data-lang="uk">Воїн</span><span data-lang="en">Warrior</span>
+        </h3>
+        <div class="font-mono text-[10px] uppercase tracking-widest text-[#b89254] mt-1.5 mb-3">
+          <span data-lang="uk">танк · ближній бій</span>
+          <span data-lang="en">tank · melee</span>
+        </div>
+        <p class="text-sm text-[#a89880] leading-relaxed mb-4">
+          <span data-lang="uk">Стіна між тобою і смертю. Несе клан крізь рейди й тримає замки.</span>
+          <span data-lang="en">The wall between you and death. Carries the clan through raids, holds castles.</span>
+        </p>
+        <div class="space-y-1.5 pt-3 border-t border-[#36302a] text-[11px]">
+          <div class="flex justify-between"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">стати</span><span data-lang="en">stats</span></span><span class="font-mono text-[#d4c8b0]"><span data-lang="uk">СИЛА · ВИТРИВ.</span><span data-lang="en">STR · VIT</span></span></div>
+          <div class="flex justify-between"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">складність</span><span data-lang="en">difficulty</span></span><span class="font-mono"><span class="text-[#d4ae6c]">★★</span><span class="text-[#36302a]">☆☆☆</span></span></div>
+          <div class="flex justify-between"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">скіл</span><span data-lang="en">skill</span></span><span class="font-mono text-[#d4ae6c] italic"><span data-lang="uk">Залізна стіна</span><span data-lang="en">Iron Wall</span></span></div>
+        </div>
+      </div>
+
+      <!-- Archer -->
+      <div class="panel class-card p-6">
+        <div class="class-sigil mb-5">
+          <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-12">
+            <path d="M28 14 C 42 26, 42 54, 28 66"/>
+            <line x1="28" y1="14" x2="28" y2="66" opacity="0.4"/>
+            <line x1="22" y1="40" x2="64" y2="40" stroke-width="1.3"/>
+            <path d="M58 35 L66 40 L58 45" stroke-width="1.3"/>
+            <path d="M24 36 L20 40 L24 44" opacity="0.7"/>
+            <path d="M26 34 L22 40 L26 46" opacity="0.5"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-semibold text-2xl text-[#d4ae6c] leading-none">
+          <span data-lang="uk">Лучник</span><span data-lang="en">Archer</span>
+        </h3>
+        <div class="font-mono text-[10px] uppercase tracking-widest text-[#b89254] mt-1.5 mb-3">
+          <span data-lang="uk">далекий бій · крит</span>
+          <span data-lang="en">ranged · crit</span>
+        </div>
+        <p class="text-sm text-[#a89880] leading-relaxed mb-4">
+          <span data-lang="uk">Точність важить більше за силу. Один постріл — одна голова.</span>
+          <span data-lang="en">Precision over power. One shot — one head.</span>
+        </p>
+        <div class="space-y-1.5 pt-3 border-t border-[#36302a] text-[11px]">
+          <div class="flex justify-between"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">стати</span><span data-lang="en">stats</span></span><span class="font-mono text-[#d4c8b0]"><span data-lang="uk">СПРИТ. · УДАЧА</span><span data-lang="en">AGI · LUCK</span></span></div>
+          <div class="flex justify-between"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">складність</span><span data-lang="en">difficulty</span></span><span class="font-mono"><span class="text-[#d4ae6c]">★★★</span><span class="text-[#36302a]">☆☆</span></span></div>
+          <div class="flex justify-between"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">скіл</span><span data-lang="en">skill</span></span><span class="font-mono text-[#d4ae6c] italic"><span data-lang="uk">Око дракона</span><span data-lang="en">Dragon's Eye</span></span></div>
+        </div>
+      </div>
+
+      <!-- Mage -->
+      <div class="panel class-card p-6">
+        <div class="class-sigil mb-5">
+          <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-12">
+            <circle cx="40" cy="22" r="7"/>
+            <circle cx="40" cy="22" r="2.5" fill="currentColor"/>
+            <path d="M34 15 L30 11 M46 15 L50 11" opacity="0.7"/>
+            <line x1="40" y1="29" x2="40" y2="68" stroke-width="1.3"/>
+            <path d="M34 68 L46 68"/>
+            <line x1="36" y1="36" x2="44" y2="36" opacity="0.4"/>
+            <line x1="37" y1="44" x2="43" y2="44" opacity="0.4"/>
+            <line x1="38" y1="52" x2="42" y2="52" opacity="0.4"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-semibold text-2xl text-[#d4ae6c] leading-none">
+          <span data-lang="uk">Маг</span><span data-lang="en">Mage</span>
+        </h3>
+        <div class="font-mono text-[10px] uppercase tracking-widest text-[#b89254] mt-1.5 mb-3">
+          <span data-lang="uk">маг · урон по зоні</span>
+          <span data-lang="en">caster · aoe dps</span>
+        </div>
+        <p class="text-sm text-[#a89880] leading-relaxed mb-4">
+          <span data-lang="uk">Книги, кров і кістки. Висаджує групу ворогів одним заклинанням.</span>
+          <span data-lang="en">Books, blood, and bones. Wipes a group with one spell.</span>
+        </p>
+        <div class="space-y-1.5 pt-3 border-t border-[#36302a] text-[11px]">
+          <div class="flex justify-between"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">стати</span><span data-lang="en">stats</span></span><span class="font-mono text-[#d4c8b0]"><span data-lang="uk">ІНТЕЛ. · УДАЧА</span><span data-lang="en">INT · LUCK</span></span></div>
+          <div class="flex justify-between"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">складність</span><span data-lang="en">difficulty</span></span><span class="font-mono"><span class="text-[#d4ae6c]">★★★★</span><span class="text-[#36302a]">☆</span></span></div>
+          <div class="flex justify-between"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">скіл</span><span data-lang="en">skill</span></span><span class="font-mono text-[#d4ae6c] italic"><span data-lang="uk">Вогняна буря</span><span data-lang="en">Firestorm</span></span></div>
+        </div>
+      </div>
+
+      <!-- Rogue (locked until beta) -->
+      <div class="panel class-card class-locked p-6">
+        <div class="lock-badge">🔒 <span data-lang="uk">бета</span><span data-lang="en">beta</span></div>
+        <div class="class-sigil mb-5">
+          <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-12">
+            <g transform="translate(40 40) rotate(-28)">
+              <line x1="0" y1="-22" x2="0" y2="22" stroke-width="1.3"/>
+              <line x1="-7" y1="14" x2="7" y2="14" stroke-width="1.5"/>
+              <circle cx="0" cy="22" r="2" fill="currentColor"/>
+              <path d="M-3 -22 L0 -27 L3 -22"/>
+            </g>
+            <g transform="translate(40 40) rotate(28)">
+              <line x1="0" y1="-22" x2="0" y2="22" stroke-width="1.3"/>
+              <line x1="-7" y1="14" x2="7" y2="14" stroke-width="1.5"/>
+              <circle cx="0" cy="22" r="2" fill="currentColor"/>
+              <path d="M-3 -22 L0 -27 L3 -22"/>
+            </g>
+          </svg>
+        </div>
+        <h3 class="font-display font-semibold text-2xl text-[#d4ae6c] leading-none">
+          <span data-lang="uk">Розбійник</span><span data-lang="en">Rogue</span>
+        </h3>
+        <div class="font-mono text-[10px] uppercase tracking-widest text-[#b89254] mt-1.5 mb-3">
+          <span data-lang="uk">убивця · крит-бурст</span>
+          <span data-lang="en">assassin · crit burst</span>
+        </div>
+        <p class="text-sm text-[#a89880] leading-relaxed mb-4">
+          <span data-lang="uk">Один удар у спину коштує більше за дюжину в груди. У Полі ризику — імператор.</span>
+          <span data-lang="en">One backstab beats a dozen frontal hits. King of the Risk Field.</span>
+        </p>
+        <div class="space-y-1.5 pt-3 border-t border-[#36302a] text-[11px]">
+          <div class="flex justify-between"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">стати</span><span data-lang="en">stats</span></span><span class="font-mono text-[#d4c8b0]"><span data-lang="uk">СПРИТ. · КРИТ</span><span data-lang="en">AGI · CRIT</span></span></div>
+          <div class="flex justify-between"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">складність</span><span data-lang="en">difficulty</span></span><span class="font-mono"><span class="text-[#d4ae6c]">★★★★★</span></span></div>
+          <div class="flex justify-between"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">скіл</span><span data-lang="en">skill</span></span><span class="font-mono text-[#d4ae6c] italic"><span data-lang="uk">Перший удар</span><span data-lang="en">First Strike</span></span></div>
+        </div>
+      </div>
+
+      <!-- Priest (locked until beta) -->
+      <div class="panel class-card class-locked p-6">
+        <div class="lock-badge">🔒 <span data-lang="uk">бета</span><span data-lang="en">beta</span></div>
+        <div class="class-sigil mb-5">
+          <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-12">
+            <line x1="40" y1="10" x2="40" y2="26"/>
+            <line x1="33" y1="16" x2="47" y2="16"/>
+            <path d="M26 32 C 26 46, 54 46, 54 32 Z"/>
+            <line x1="40" y1="46" x2="40" y2="60"/>
+            <path d="M28 64 L52 64"/>
+            <path d="M32 60 L48 60"/>
+            <circle cx="40" cy="37" r="2.5" fill="currentColor"/>
+            <line x1="30" y1="36" x2="34" y2="36" opacity="0.5"/>
+            <line x1="46" y1="36" x2="50" y2="36" opacity="0.5"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-semibold text-2xl text-[#d4ae6c] leading-none">
+          <span data-lang="uk">Жрець</span><span data-lang="en">Priest</span>
+        </h3>
+        <div class="font-mono text-[10px] uppercase tracking-widest text-[#b89254] mt-1.5 mb-3">
+          <span data-lang="uk">хіл · підтримка</span>
+          <span data-lang="en">healer · support</span>
+        </div>
+        <p class="text-sm text-[#a89880] leading-relaxed mb-4">
+          <span data-lang="uk">Без нього клан гине на третьому босі. Без клану — гине він.</span>
+          <span data-lang="en">Without him the clan dies on the third boss. Without the clan — he dies.</span>
+        </p>
+        <div class="space-y-1.5 pt-3 border-t border-[#36302a] text-[11px]">
+          <div class="flex justify-between"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">стати</span><span data-lang="en">stats</span></span><span class="font-mono text-[#d4c8b0]"><span data-lang="uk">ІНТЕЛ. · ВИТРИВ.</span><span data-lang="en">INT · VIT</span></span></div>
+          <div class="flex justify-between"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">складність</span><span data-lang="en">difficulty</span></span><span class="font-mono"><span class="text-[#d4ae6c]">★★★</span><span class="text-[#36302a]">☆☆</span></span></div>
+          <div class="flex justify-between"><span class="font-mono text-[#8a7a64]"><span data-lang="uk">скіл</span><span data-lang="en">skill</span></span><span class="font-mono text-[#d4ae6c] italic"><span data-lang="uk">Друге дихання</span><span data-lang="en">Second Wind</span></span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="text-center mt-10 font-mono text-xs text-[#8a7a64]">
+      <span data-lang="uk">→ на старті альфи — 3 класичні: <span class="text-[#d4ae6c]">Воїн, Лучник, Маг</span>. Решта 2 — на відкритій беті.</span>
+      <span data-lang="en">→ at alpha launch — 3 classics: <span class="text-[#d4ae6c]">Warrior, Archer, Mage</span>. The other 2 — at open beta.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMBAT LOG ============ -->
+<section id="combat" class="py-20 bg-black/30 border-y border-[#36302a]/60">
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
+    <div>
+      <div class="font-mono text-xs uppercase tracking-[0.3em] text-[#b89254] mb-3"><span data-lang="uk">[ приклад бою ]</span><span data-lang="en">[ combat example ]</span></div>
+      <h2 class="font-display font-black text-4xl text-[#e8dcc0] mb-5">
+        <span data-lang="uk">Кожен удар — це число</span>
+        <span data-lang="en">Every hit is a number</span>
+      </h2>
+      <p class="text-[#a89880] leading-relaxed mb-4">
+        <span data-lang="uk">Кожен удар розбивається на 6 кидків: попадання, блок, ухил, броня, базовий дамаг, крит. Все видно в логу. Пересилай реплеї друзям — нехай заздрять.</span>
+        <span data-lang="en">Every hit breaks into 6 rolls: hit, block, dodge, armor, base dmg, crit. All visible. Share replays — let friends envy.</span>
+      </p>
+      <ul class="space-y-2 text-sm text-[#a89880]">
+        <li class="flex gap-2"><span class="text-[#b89254]">▸</span><span><span data-lang="uk">4 зони удару · 4 зони блоку</span><span data-lang="en">4 attack zones · 4 block zones</span></span></li>
+        <li class="flex gap-2"><span class="text-[#b89254]">▸</span><span><span data-lang="uk">ходи по 30 сек · повноцінно граєш з телефону</span><span data-lang="en">30-sec turns · fully playable on phone</span></span></li>
+        <li class="flex gap-2"><span class="text-[#b89254]">▸</span><span><span data-lang="uk">повний replay після бою</span><span data-lang="en">full replay after every fight</span></span></li>
+        <li class="flex gap-2"><span class="text-[#b89254]">▸</span><span><span data-lang="uk">ставки золотом на чужі бої</span><span data-lang="en">bet gold on others' fights</span></span></li>
+      </ul>
+    </div>
+
+    <div class="panel p-5 combat-log">
+      <div class="flex items-center justify-between mb-3 pb-3 border-b border-[#36302a]">
+        <div class="font-mono text-xs text-[#b89254]"><span data-lang="uk">бій #4821 · РАУНД 3</span><span data-lang="en">fight #4821 · ROUND 3</span></div>
+        <div class="font-mono text-xs text-[#8a7a64]">23:14:07</div>
+      </div>
+      <div class="space-y-1">
+        <div data-lang="uk">
+          <p><span class="log-time">[23:13:42]</span> <span class="log-system">→ Вальдемар обирає: ГОЛОВА (атака) / КОРПУС (блок)</span></p>
+          <p><span class="log-time">[23:13:54]</span> <span class="log-system">→ Грюнвальд обирає: НОГИ (атака) / ГОЛОВА (блок)</span></p>
+          <p><span class="log-time">[23:14:01]</span> Вальдемар б'є <b class="text-[#e8dcc0]">голову</b>... <span class="log-hit">блок зруйновано!</span></p>
+          <p><span class="log-time">[23:14:01]</span> &nbsp;&nbsp;кидок: 18+142 vs 88+34 → <span class="log-crit">КРИТ ×2.4</span></p>
+          <p><span class="log-time">[23:14:01]</span> &nbsp;&nbsp;Грюнвальд отримує <span class="log-hit">186 урону</span> (HP: 412 → 226)</p>
+          <p><span class="log-time">[23:14:02]</span> Грюнвальд б'є <b class="text-[#e8dcc0]">ноги</b>... <span class="log-miss">блок успішний</span></p>
+          <p><span class="log-time">[23:14:02]</span> &nbsp;&nbsp;кидок: 9+98 vs 120+22 → <span class="log-miss">14 урону (поглинуто)</span></p>
+          <p><span class="log-time">[23:14:03]</span> &nbsp;&nbsp;Вальдемар отримує <span class="log-hit">14 урону</span> (HP: 432 → 418)</p>
+          <p class="pt-2"><span class="log-time">[23:14:07]</span> <span class="log-system">▶ раунд 4 — обери дію (24 сек)</span></p>
+        </div>
+        <div data-lang="en">
+          <p><span class="log-time">[23:13:42]</span> <span class="log-system">→ Valdemar picks: HEAD (attack) / TORSO (block)</span></p>
+          <p><span class="log-time">[23:13:54]</span> <span class="log-system">→ Grunwald picks: LEGS (attack) / HEAD (block)</span></p>
+          <p><span class="log-time">[23:14:01]</span> Valdemar strikes <b class="text-[#e8dcc0]">head</b>... <span class="log-hit">block shattered!</span></p>
+          <p><span class="log-time">[23:14:01]</span> &nbsp;&nbsp;roll: 18+142 vs 88+34 → <span class="log-crit">CRIT ×2.4</span></p>
+          <p><span class="log-time">[23:14:01]</span> &nbsp;&nbsp;Grunwald takes <span class="log-hit">186 dmg</span> (HP: 412 → 226)</p>
+          <p><span class="log-time">[23:14:02]</span> Grunwald strikes <b class="text-[#e8dcc0]">legs</b>... <span class="log-miss">block successful</span></p>
+          <p><span class="log-time">[23:14:02]</span> &nbsp;&nbsp;roll: 9+98 vs 120+22 → <span class="log-miss">14 dmg (absorbed)</span></p>
+          <p><span class="log-time">[23:14:03]</span> &nbsp;&nbsp;Valdemar takes <span class="log-hit">14 dmg</span> (HP: 432 → 418)</p>
+          <p class="pt-2"><span class="log-time">[23:14:07]</span> <span class="log-system">▶ round 4 — pick action (24 sec)</span></p>
+        </div>
+      </div>
+      <div class="mt-4 pt-3 border-t border-[#36302a] flex gap-2 flex-wrap">
+        <button class="btn-ghost px-3 py-1.5 font-mono text-xs uppercase"><span data-lang="uk">Голова</span><span data-lang="en">Head</span></button>
+        <button class="btn-ghost px-3 py-1.5 font-mono text-xs uppercase"><span data-lang="uk">Корпус</span><span data-lang="en">Torso</span></button>
+        <button class="btn-ghost px-3 py-1.5 font-mono text-xs uppercase"><span data-lang="uk">Пояс</span><span data-lang="en">Belt</span></button>
+        <button class="btn-ghost px-3 py-1.5 font-mono text-xs uppercase"><span data-lang="uk">Ноги</span><span data-lang="en">Legs</span></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PVE & ADVENTURES (NEW) ============ -->
+<section id="pve" class="py-20">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-14">
+      <div class="font-mono text-xs uppercase tracking-[0.3em] text-[#b89254] mb-3"><span data-lang="uk">[ pve · пригоди ]</span><span data-lang="en">[ pve · adventures ]</span></div>
+      <h2 class="font-display font-black text-4xl md:text-5xl text-[#e8dcc0]">
+        <span data-lang="uk">Світ, який треба досліджувати</span>
+        <span data-lang="en">A world worth exploring</span>
+      </h2>
+      <p class="text-[#a89880] mt-4 max-w-2xl mx-auto">
+        <span data-lang="uk">Не лише PvP. Рейди на легендарних босів, підземелля з друзями, рогалик-режим для відчайдухів і світ, який змінюється сам.</span>
+        <span data-lang="en">Not just PvP. Raids on legendary bosses, dungeons with friends, roguelike mode for the bold, and a world that changes on its own.</span>
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <!-- Raids -->
+      <div class="panel pve-card p-6">
+        <div class="sigil mb-3 text-[#8e2a2a]">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7">
+            <path d="M14 26 C 14 18, 20 12, 24 12 C 28 12, 34 18, 34 26 C 34 32, 32 36, 28 38 L20 38 C 16 36, 14 32, 14 26 Z"/>
+            <circle cx="20" cy="24" r="1.5" fill="currentColor"/>
+            <circle cx="28" cy="24" r="1.5" fill="currentColor"/>
+            <path d="M22 32 L24 30 L26 32"/>
+            <path d="M16 40 L20 38 M32 40 L28 38"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-bold text-xl text-[#d4ae6c] mb-2"><span data-lang="uk">Рейди</span><span data-lang="en">Raids</span></h3>
+        <p class="text-sm text-[#a89880] leading-relaxed mb-3">
+          <span data-lang="uk">5–25 гравців проти босів-легенд. Лут, який не дістати у жодному магазині. Перші клани, що зрубають боса — у залі слави.</span>
+          <span data-lang="en">5–25 players vs legendary bosses. Loot you can't buy anywhere. First clans to down a boss — on the wall of fame.</span>
+        </p>
+        <div class="font-mono text-[10px] uppercase text-[#8a7a64]">
+          <span data-lang="uk">→ 8 рейд-босів на старті</span>
+          <span data-lang="en">→ 8 raid bosses at launch</span>
+        </div>
+      </div>
+
+      <!-- Dungeons -->
+      <div class="panel pve-card p-6">
+        <div class="sigil mb-3 text-[#b89254]">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7">
+            <circle cx="16" cy="22" r="8"/>
+            <circle cx="16" cy="22" r="2.5" fill="currentColor"/>
+            <path d="M22 22 L40 22"/>
+            <path d="M34 22 L34 28 M40 22 L40 30"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-bold text-xl text-[#d4ae6c] mb-2"><span data-lang="uk">Підземелля</span><span data-lang="en">Dungeons</span></h3>
+        <p class="text-sm text-[#a89880] leading-relaxed mb-3">
+          <span data-lang="uk">Соло або групи до 5. Щоденки, тижневі челенджі, унікальні нагороди. Складність росте — лут теж.</span>
+          <span data-lang="en">Solo or up to 5 players. Dailies, weekly challenges, unique rewards. Difficulty scales — so does loot.</span>
+        </p>
+        <div class="font-mono text-[10px] uppercase text-[#8a7a64]">
+          <span data-lang="uk">→ 12 підземель · 3 рівні складності</span>
+          <span data-lang="en">→ 12 dungeons · 3 difficulty tiers</span>
+        </div>
+      </div>
+
+      <!-- Roguelike -->
+      <div class="panel pve-card p-6">
+        <div class="sigil mb-3 text-[#4f7d99]">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7">
+            <path d="M12 24 C 12 18, 18 18, 24 24 C 30 30, 36 30, 36 24 C 36 18, 30 18, 24 24 C 18 30, 12 30, 12 24 Z"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-bold text-xl text-[#d4ae6c] mb-2"><span data-lang="uk">Рогалик</span><span data-lang="en">Roguelike</span></h3>
+        <p class="text-sm text-[#a89880] leading-relaxed mb-3">
+          <span data-lang="uk">Нескінченне підземелля з процедурною генерацією. Кожна спроба унікальна. Помер — почав з нуля. Чим далі — тим більше слави.</span>
+          <span data-lang="en">Infinite procedural dungeon. Each run is unique. Die — start over. The deeper you go — the more glory.</span>
+        </p>
+        <div class="font-mono text-[10px] uppercase text-[#8a7a64]">
+          <span data-lang="uk">→ лідерборд глибини</span>
+          <span data-lang="en">→ depth leaderboard</span>
+        </div>
+      </div>
+
+      <!-- Events -->
+      <div class="panel pve-card p-6">
+        <div class="sigil mb-3 text-[#b85f30]">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7">
+            <path d="M24 8 C 22 14, 18 16, 18 22 C 18 24, 19 26, 20 27 C 18 27, 14 30, 14 34 C 14 39, 18 42, 24 42 C 30 42, 34 39, 34 34 C 34 28, 28 26, 28 20 C 28 14, 26 12, 24 8 Z"/>
+            <path d="M24 24 C 22 26, 21 28, 21 30 C 21 32, 22 34, 24 34 C 26 34, 27 32, 27 30 C 27 28, 26 26, 24 24 Z"/>
+          </svg>
+        </div>
+        <h3 class="font-display font-bold text-xl text-[#d4ae6c] mb-2"><span data-lang="uk">Сезонні івенти</span><span data-lang="en">Seasonal events</span></h3>
+        <p class="text-sm text-[#a89880] leading-relaxed mb-3">
+          <span data-lang="uk">Світ змінюється раз на місяць. Динамічні події в реальному часі — навала, війна богів, кривавий місяць. Пропустив — все, до наступного сезону.</span>
+          <span data-lang="en">World changes monthly. Dynamic real-time events — invasions, god wars, blood moon. Missed it — wait till next season.</span>
+        </p>
+        <div class="font-mono text-[10px] uppercase text-[#8a7a64]">
+          <span data-lang="uk">→ ексклюзивний лут сезону</span>
+          <span data-lang="en">→ season-exclusive loot</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ AUCTION HOUSE ============ -->
+<section id="auction" class="py-20 border-t border-[#36302a]/40">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="grid md:grid-cols-5 gap-10 items-center">
+
+      <!-- Left: copy (2 cols) -->
+      <div class="md:col-span-2">
+        <div class="font-mono text-xs uppercase tracking-[0.3em] text-[#b89254] mb-3">
+          <span data-lang="uk">[ аукціон ]</span><span data-lang="en">[ auction house ]</span>
+        </div>
+        <h2 class="font-display font-medium text-4xl md:text-5xl text-[#e8dcc0] leading-tight mb-5">
+          <span data-lang="uk">Жива торгівля.<br/>24/7.</span>
+          <span data-lang="en">Living trade.<br/>24/7.</span>
+        </h2>
+        <p class="text-[#a89880] leading-relaxed mb-5">
+          <span data-lang="uk">Все, що знайдене в підземеллях, вигране у Полі ризику чи скрафчене — йде на аукціон. <span class="text-[#d4ae6c]">Гравці визначають ціни.</span> Дефіцит створює легенди.</span>
+          <span data-lang="en">Everything found in dungeons, won in the Risk Field, or crafted — goes to auction. <span class="text-[#d4ae6c]">Players set prices.</span> Scarcity creates legends.</span>
+        </p>
+        <ul class="space-y-2 text-sm text-[#a89880]">
+          <li class="flex gap-2"><span class="text-[#b89254]">▸</span>
+            <span><span data-lang="uk">живі ставки на унікальні предмети</span><span data-lang="en">live bidding on unique items</span></span>
+          </li>
+          <li class="flex gap-2"><span class="text-[#b89254]">▸</span>
+            <span><span data-lang="uk">історія всіх власників — карбується на предметі</span><span data-lang="en">full ownership history — carved into the item</span></span>
+          </li>
+          <li class="flex gap-2"><span class="text-[#b89254]">▸</span>
+            <span><span data-lang="uk">торги між кланами, маркет-боти заборонені</span><span data-lang="en">clan-to-clan trade, no market bots</span></span>
+          </li>
+          <li class="flex gap-2"><span class="text-[#b89254]">▸</span>
+            <span><span data-lang="uk">10% комісії спалюється — економіка не роздувається</span><span data-lang="en">10% fee is burned — economy doesn't inflate</span></span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Right: live feed mock (3 cols) -->
+      <div class="md:col-span-3">
+        <div class="panel p-5">
+          <!-- header -->
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#36302a]">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 bg-[#94b566] rounded-full soft-pulse"></span>
+              <span class="font-mono text-[11px] uppercase tracking-widest text-[#b89254]">
+                <span data-lang="uk">живий аукціон · трансляція</span>
+                <span data-lang="en">live auction · streaming</span>
+              </span>
+            </div>
+            <div class="font-mono text-[11px] text-[#8a7a64]">5 847
+              <span data-lang="uk">лотів</span><span data-lang="en">lots</span>
+            </div>
+          </div>
+
+          <!-- feed rows -->
+          <div class="space-y-2 font-mono text-xs">
+            <div class="grid grid-cols-[60px_1fr_100px] gap-3 items-center py-2 border-b border-[#36302a]/40">
+              <span class="text-[#8a7a64]">00:42</span>
+              <div>
+                <div class="text-[#e8dcc0]"><span data-lang="uk">Меч Бунтаря +5</span><span data-lang="en">Rebel's Blade +5</span></div>
+                <div class="text-[#8a7a64] text-[10px]">Drakedog → Pikaboo</div>
+              </div>
+              <span class="text-right text-[#d4ae6c] font-semibold">12 400 🪙</span>
+            </div>
+
+            <div class="grid grid-cols-[60px_1fr_100px] gap-3 items-center py-2 border-b border-[#36302a]/40">
+              <span class="text-[#8a7a64]">01:15</span>
+              <div>
+                <div class="text-[#d4c8b0]"><span data-lang="uk">Зілля стійкості · 10×</span><span data-lang="en">Stamina potion · 10×</span></div>
+                <div class="text-[#8a7a64] text-[10px]"><span data-lang="uk">анонім → Swifty</span><span data-lang="en">anonymous → Swifty</span></div>
+              </div>
+              <span class="text-right text-[#d4c8b0]">340 🪙</span>
+            </div>
+
+            <div class="grid grid-cols-[60px_1fr_100px] gap-3 items-center py-2 border-b border-[#36302a]/40">
+              <span class="text-[#8a7a64]">02:03</span>
+              <div>
+                <div class="text-[#e8dcc0]"><span data-lang="uk">Шолом Метода</span><span data-lang="en">Helm of Method</span></div>
+                <div class="text-[#8a7a64] text-[10px]">Reckful → Kungen</div>
+              </div>
+              <span class="text-right text-[#d4ae6c] font-semibold">8 200 🪙</span>
+            </div>
+
+            <div class="grid grid-cols-[60px_1fr_100px] gap-3 items-center py-2 border-b border-[#36302a]/40 bg-[#b89254]/5">
+              <span class="text-[#b85f30]">LIVE</span>
+              <div>
+                <div class="text-[#e8dcc0]"><span data-lang="uk">Кільце Кривавого Місяця</span><span data-lang="en">Ring of the Blood Moon</span> <span class="text-[#d4ae6c]">★★★</span></div>
+                <div class="text-[#b85f30] text-[10px]"><span data-lang="uk">→ 4 живі ставки</span><span data-lang="en">→ 4 active bids</span></div>
+              </div>
+              <span class="text-right text-[#b85f30] font-semibold">24 800 🪙</span>
+            </div>
+
+            <div class="grid grid-cols-[60px_1fr_100px] gap-3 items-center py-2 border-b border-[#36302a]/40">
+              <span class="text-[#8a7a64]">04:22</span>
+              <div>
+                <div class="text-[#d4c8b0]"><span data-lang="uk">Сувій воскресіння</span><span data-lang="en">Resurrection scroll</span></div>
+                <div class="text-[#8a7a64] text-[10px]"><span data-lang="uk">анонім → анонім</span><span data-lang="en">anonymous → anonymous</span></div>
+              </div>
+              <span class="text-right text-[#d4c8b0]">1 100 🪙</span>
+            </div>
+
+            <div class="grid grid-cols-[60px_1fr_100px] gap-3 items-center py-2">
+              <span class="text-[#8a7a64]">06:08</span>
+              <div>
+                <div class="text-[#d4c8b0]"><span data-lang="uk">Кинджал тіні</span><span data-lang="en">Shadow dagger</span></div>
+                <div class="text-[#8a7a64] text-[10px]">Vurtne → Bajheera</div>
+              </div>
+              <span class="text-right text-[#d4c8b0]">3 450 🪙</span>
+            </div>
+          </div>
+
+          <!-- footer stats -->
+          <div class="mt-4 pt-3 border-t border-[#36302a] grid grid-cols-3 gap-3 text-center">
+            <div>
+              <div class="font-display font-bold text-xl text-[#d4ae6c]">2.1M</div>
+              <div class="font-mono text-[9px] uppercase tracking-widest text-[#8a7a64] mt-0.5"><span data-lang="uk">обіг за тиждень</span><span data-lang="en">weekly volume</span></div>
+            </div>
+            <div>
+              <div class="font-display font-bold text-xl text-[#d4ae6c]">12</div>
+              <div class="font-mono text-[9px] uppercase tracking-widest text-[#8a7a64] mt-0.5"><span data-lang="uk">рідкісних/тиждень</span><span data-lang="en">rare items/week</span></div>
+            </div>
+            <div>
+              <div class="font-display font-bold text-xl text-[#d4ae6c]">24/7</div>
+              <div class="font-mono text-[9px] uppercase tracking-widest text-[#8a7a64] mt-0.5"><span data-lang="uk">торги ніколи не сплять</span><span data-lang="en">trade never sleeps</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center mt-4 font-mono text-[11px] text-[#8a7a64]">
+          <span data-lang="uk">приклад трансляції · справжні лоти — з беті</span>
+          <span data-lang="en">sample feed · real lots — from beta</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RISK FIELD (UNIQUE PVP HIGHLIGHT) ============ -->
+<section id="risk" class="py-20 relative overflow-hidden">
+  <div class="absolute inset-0 hazard-stripe opacity-30"></div>
+  <div class="absolute inset-0" style="background: radial-gradient(ellipse at center, rgba(90,30,30,0.4), transparent 70%);"></div>
+
+  <div class="max-w-6xl mx-auto px-6 relative">
+    <div class="text-center mb-12">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 border border-[#8e2a2a]/60 bg-black/60 font-mono text-[11px] uppercase tracking-widest text-[#8e2a2a] mb-5">
+        <span class="w-1.5 h-1.5 bg-[#8e2a2a] animate-pulse"></span>
+        <span data-lang="uk">УНІКАЛЬНИЙ РЕЖИМ · ВИСОКІ СТАВКИ</span>
+        <span data-lang="en">UNIQUE MODE · HIGH STAKES</span>
+      </div>
+      <h2 class="font-display font-medium text-6xl md:text-8xl blood-text blood-glow leading-none">
+        <span data-lang="uk">ПОЛЕ РИЗИКУ</span>
+        <span data-lang="en">RISK FIELD</span>
+      </h2>
+      <p class="text-[#e8dcc0] mt-6 max-w-2xl mx-auto text-lg leading-relaxed">
+        <span data-lang="uk">Заходиш — ризикуєш усім. <span class="text-[#8e2a2a] font-bold">Перемагаєш — забираєш чуже спорядження.</span> <span class="text-[#a89880]">Програєш — твоє лежить на землі для наступного.</span></span>
+        <span data-lang="en">Enter — risk everything. <span class="text-[#8e2a2a] font-bold">Win — take the loser's gear.</span> <span class="text-[#a89880]">Lose — yours drops for the next one.</span></span>
+      </p>
+      <p class="text-[#8a7a64] mt-3 italic">
+        <span data-lang="uk">«Не для слабких. Для тих, хто хоче відчути справжній смак перемоги.»</span>
+        <span data-lang="en">"Not for the weak. For those who want to taste real victory."</span>
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="panel-red p-6 relative">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-[#8e2a2a] mb-3"><span data-lang="uk">переможцю</span><span data-lang="en">to the winner</span></div>
+        <div class="font-display font-black text-3xl text-[#d4ae6c] mb-2">+ 60%</div>
+        <p class="text-sm text-[#d4c8b0]">
+          <span data-lang="uk">лута суперника переходить тобі. Решта 40% — сервер забирає назад в обіг.</span>
+          <span data-lang="en">of the loser's gear goes to you. The other 40% — back into circulation.</span>
+        </p>
+      </div>
+
+      <div class="panel-red p-6 relative">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-[#8e2a2a] mb-3"><span data-lang="uk">переможеному</span><span data-lang="en">to the loser</span></div>
+        <div class="font-display font-black text-3xl text-[#8e2a2a] mb-2">— DROP</div>
+        <p class="text-sm text-[#d4c8b0]">
+          <span data-lang="uk">випадкові слоти екіпіровки. Захисні зачарування знижують шанс. Голий не дропає нічого.</span>
+          <span data-lang="en">random gear slots. Defensive enchants lower the chance. Naked drops nothing.</span>
+        </p>
+      </div>
+
+      <div class="panel-red p-6 relative">
+        <div class="font-mono text-[10px] uppercase tracking-widest text-[#8e2a2a] mb-3"><span data-lang="uk">історія шмота</span><span data-lang="en">gear history</span></div>
+        <div class="font-display font-black text-3xl text-[#d4ae6c] mb-2">∞</div>
+        <p class="text-sm text-[#d4c8b0]">
+          <span data-lang="uk">кожен предмет пам'ятає всіх власників. Імена жертв викарбовані на броні назавжди.</span>
+          <span data-lang="en">every item remembers all owners. Victims' names are carved on the armor forever.</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-8 text-center">
+      <div class="font-mono text-xs text-[#8a7a64]">
+        <span data-lang="uk">⚠ доступне з рівня 25 · окрема зона входу · вийти живим = повний переможець</span>
+        <span data-lang="en">⚠ available from lvl 25 · separate entry zone · exit alive = full victor</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CLANS & BATTLES ============ -->
+<section id="clans" class="py-20 bg-black/30 border-y border-[#36302a]/60">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-14">
+      <div class="font-mono text-xs uppercase tracking-[0.3em] text-[#b89254] mb-3"><span data-lang="uk">[ битви й клани ]</span><span data-lang="en">[ battles &amp; clans ]</span></div>
+      <h2 class="font-display font-black text-4xl md:text-5xl text-[#e8dcc0] glow-text">
+        <span data-lang="uk">Гра — це <span class="blood-text">люди</span></span>
+        <span data-lang="en">The game is the <span class="blood-text">people</span></span>
+      </h2>
+      <p class="text-[#a89880] mt-4 max-w-2xl mx-auto">
+        <span data-lang="uk">Можеш качати персонажа місяцями — але реальна історія починається в клані. Замки, території, війни, союзи, зради.</span>
+        <span data-lang="en">You can grind for months — but the real story starts in a clan. Castles, territories, wars, alliances, betrayals.</span>
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-4 mb-10">
+      <div class="panel p-6 text-center">
+        <div class="font-display font-black text-5xl text-[#d4ae6c] glow-text">847</div>
+        <div class="font-mono text-[11px] uppercase text-[#8a7a64] mt-2"><span data-lang="uk">активних кланів у бета-плані</span><span data-lang="en">target active clans at beta</span></div>
+      </div>
+      <div class="panel p-6 text-center">
+        <div class="font-display font-black text-5xl text-[#d4ae6c] glow-text">12<span class="text-2xl">k+</span></div>
+        <div class="font-mono text-[11px] uppercase text-[#8a7a64] mt-2"><span data-lang="uk">очікуваний онлайн у пік</span><span data-lang="en">projected peak online</span></div>
+      </div>
+      <div class="panel p-6 text-center">
+        <div class="font-display font-black text-3xl text-[#d4ae6c] glow-text"><span data-lang="uk">щонеділі</span><span data-lang="en">every Sunday</span></div>
+        <div class="font-mono text-[11px] uppercase text-[#8a7a64] mt-2"><span data-lang="uk">турнір топ-100 · приз золотом</span><span data-lang="en">top-100 tournament · gold prize</span></div>
+      </div>
+    </div>
+
+    <div class="panel p-2">
+      <div class="grid gap-1" style="grid-template-columns: 32px 1fr 60px 80px 1fr; padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; color: var(--text-dim);">
+        <span>#</span>
+        <span><span data-lang="uk">клан</span><span data-lang="en">clan</span></span>
+        <span><span data-lang="uk">людей</span><span data-lang="en">members</span></span>
+        <span>W / L</span>
+        <span><span data-lang="uk">замок</span><span data-lang="en">castle</span></span>
+      </div>
+
+      <div class="clan-row">
+        <span class="font-display font-black text-[#d4ae6c]">1</span>
+        <div><div class="font-display font-bold text-[#e8dcc0]">Method</div><div class="font-mono text-[10px] text-[#8a7a64]"><span data-lang="uk">лідер: Sco</span><span data-lang="en">leader: Sco</span></div></div>
+        <span class="font-mono text-sm text-[#d4c8b0]">142</span>
+        <span class="font-mono text-sm"><span class="text-[#94b566]">89</span>/<span class="text-[#8e2a2a]">4</span></span>
+        <span class="castle-badge"><span data-lang="uk">Темнолісся</span><span data-lang="en">Darkwood</span></span>
+      </div>
+      <div class="clan-row">
+        <span class="font-display font-black text-[#b89254]">2</span>
+        <div><div class="font-display font-bold text-[#e8dcc0]">Nihilum</div><div class="font-mono text-[10px] text-[#8a7a64]"><span data-lang="uk">лідер: Kungen</span><span data-lang="en">leader: Kungen</span></div></div>
+        <span class="font-mono text-sm text-[#d4c8b0]">128</span>
+        <span class="font-mono text-sm"><span class="text-[#94b566]">76</span>/<span class="text-[#8e2a2a]">12</span></span>
+        <span class="font-mono text-[11px] text-[#8a7a64]">—</span>
+      </div>
+      <div class="clan-row">
+        <span class="font-display font-black text-[#a89880]">3</span>
+        <div><div class="font-display font-bold text-[#e8dcc0]">Echo</div><div class="font-mono text-[10px] text-[#8a7a64]"><span data-lang="uk">лідер: Scripe</span><span data-lang="en">leader: Scripe</span></div></div>
+        <span class="font-mono text-sm text-[#d4c8b0]">98</span>
+        <span class="font-mono text-sm"><span class="text-[#94b566]">81</span>/<span class="text-[#8e2a2a]">8</span></span>
+        <span class="castle-badge"><span data-lang="uk">Південна вежа</span><span data-lang="en">South Tower</span></span>
+      </div>
+      <div class="clan-row">
+        <span class="font-mono text-[#8a7a64]">4</span>
+        <div><div class="font-display font-bold text-[#d4c8b0]">[rawr]</div><div class="font-mono text-[10px] text-[#8a7a64]"><span data-lang="uk">лідер: Aiken Frost · GW1</span><span data-lang="en">leader: Aiken Frost · GW1</span></div></div>
+        <span class="font-mono text-sm text-[#d4c8b0]">87</span>
+        <span class="font-mono text-sm"><span class="text-[#94b566]">64</span>/<span class="text-[#8e2a2a]">18</span></span>
+        <span class="font-mono text-[11px] text-[#8a7a64]">—</span>
+      </div>
+      <div class="clan-row">
+        <span class="font-mono text-[#8a7a64]">5</span>
+        <div><div class="font-display font-bold text-[#d4c8b0]">Exorsus</div><div class="font-mono text-[10px] text-[#8a7a64]"><span data-lang="uk">лідер: Vajan</span><span data-lang="en">leader: Vajan</span></div></div>
+        <span class="font-mono text-sm text-[#d4c8b0]">76</span>
+        <span class="font-mono text-sm"><span class="text-[#94b566]">55</span>/<span class="text-[#8e2a2a]">22</span></span>
+        <span class="castle-badge"><span data-lang="uk">Залізна брама</span><span data-lang="en">Iron Gate</span></span>
+      </div>
+    </div>
+
+    <div class="text-center mt-6 font-mono text-xs text-[#8a7a64]">
+      <span data-lang="uk">приклад рейтингу · реальні цифри — після старту бети</span>
+      <span data-lang="en">sample ranking · real numbers — once beta launches</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CLASSIC vs MODERN ============ -->
+<section class="py-20">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-12">
+      <div class="font-mono text-xs uppercase tracking-[0.3em] text-[#b89254] mb-3"><span data-lang="uk">[ підхід ]</span><span data-lang="en">[ approach ]</span></div>
+      <h2 class="font-display font-black text-4xl text-[#e8dcc0]">
+        <span data-lang="uk">Що залишили. Що оновили.</span>
+        <span data-lang="en">What we kept. What we modernized.</span>
+      </h2>
+      <p class="text-[#a89880] mt-4 max-w-2xl mx-auto">
+        <span data-lang="uk">Не хочемо робити «ще одну ностальгійну гру». Хочемо гру, де класичний геймплей зустрічається з 2026.</span>
+        <span data-lang="en">We're not making "another nostalgia game". We're making one where classic gameplay meets 2026.</span>
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <!-- Kept -->
+      <div class="panel-gold p-7">
+        <div class="font-mono text-[11px] uppercase tracking-widest text-[#b89254] mb-3"><span data-lang="uk">[ залишили класичне ]</span><span data-lang="en">[ kept classic ]</span></div>
+        <h3 class="font-display font-bold text-2xl text-[#d4ae6c] mb-5"><span data-lang="uk">Душа класики</span><span data-lang="en">The classic soul</span></h3>
+        <ul class="vs-list text-[#d4c8b0]">
+          <li><span class="marker text-[#b89254]">◆</span><span data-lang="uk">Текстова бойовка з відкритими кубиками</span><span data-lang="en">Text combat with open dice rolls</span></li>
+          <li><span class="marker text-[#b89254]">◆</span><span data-lang="uk">Глибокі білди — 200+ предметів, 40+ навичок</span><span data-lang="en">Deep builds — 200+ items, 40+ skills</span></li>
+          <li><span class="marker text-[#b89254]">◆</span><span data-lang="uk">Жорстка економіка — кожна монета вагома</span><span data-lang="en">Tough economy — every coin matters</span></li>
+          <li><span class="marker text-[#b89254]">◆</span><span data-lang="uk">Ризик / винагорода — є чого боятись</span><span data-lang="en">Risk / reward — there's something to fear</span></li>
+          <li><span class="marker text-[#b89254]">◆</span><span data-lang="uk">Спільнота і клани — головний драйвер гри</span><span data-lang="en">Community and clans — the main driver</span></li>
+          <li><span class="marker text-[#b89254]">◆</span><span data-lang="uk">Повільна, чесна прокачка — без «купи рівень»</span><span data-lang="en">Slow, honest leveling — no "buy a level"</span></li>
+        </ul>
+      </div>
+
+      <!-- Modernized -->
+      <div class="panel-red p-7">
+        <div class="font-mono text-[11px] uppercase tracking-widest text-[#8e2a2a] mb-3"><span data-lang="uk">[ оновили під 2026 ]</span><span data-lang="en">[ modernized for 2026 ]</span></div>
+        <h3 class="font-display font-bold text-2xl text-[#d4ae6c] mb-5"><span data-lang="uk">Тіло сучасності</span><span data-lang="en">The modern body</span></h3>
+        <ul class="vs-list text-[#d4c8b0]">
+          <li><span class="marker text-[#8e2a2a]">◆</span><span data-lang="uk">Сучасний UI/UX — нічого не залипає</span><span data-lang="en">Modern UI/UX — nothing freezes</span></li>
+          <li><span class="marker text-[#8e2a2a]">◆</span><span data-lang="uk">Мобілка з першого дня — повний функціонал</span><span data-lang="en">Mobile from day one — full functionality</span></li>
+          <li><span class="marker text-[#8e2a2a]">◆</span><span data-lang="uk">Чесний баланс — без прихованих модифікаторів</span><span data-lang="en">Fair balance — no hidden modifiers</span></li>
+          <li><span class="marker text-[#8e2a2a]">◆</span><span data-lang="uk">Античит і анти-мульті — чесні правила</span><span data-lang="en">Anti-cheat &amp; anti-multi — fair rules</span></li>
+          <li><span class="marker text-[#8e2a2a]">◆</span><span data-lang="uk">Сучасний візуал, анімації, звук</span><span data-lang="en">Modern visuals, animations, sound</span></li>
+          <li><span class="marker text-[#8e2a2a]">◆</span><span data-lang="uk">Швидкі сервери — 30-сек ходи без лагів</span><span data-lang="en">Fast servers — 30-sec turns without lag</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ROADMAP ============ -->
+<section id="roadmap" class="py-20 bg-black/30 border-y border-[#36302a]/60">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-14">
+      <div class="font-mono text-xs uppercase tracking-[0.3em] text-[#b89254] mb-3"><span data-lang="uk">[ план ]</span><span data-lang="en">[ plan ]</span></div>
+      <h2 class="font-display font-black text-4xl text-[#e8dcc0]">Roadmap</h2>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="panel p-5">
+        <div class="font-mono text-[10px] uppercase text-[#6a8a4a] mb-2"><span data-lang="uk">▸ зараз</span><span data-lang="en">▸ now</span></div>
+        <div class="font-display font-bold text-lg text-[#d4ae6c] mb-1"><span data-lang="uk">Пре-реєстрація</span><span data-lang="en">Pre-registration</span></div>
+        <div class="font-mono text-xs text-[#8a7a64] mb-3"><span data-lang="uk">травень 2026</span><span data-lang="en">May 2026</span></div>
+        <p class="text-sm text-[#a89880]"><span data-lang="uk">Збираємо реєстр перших бійців. Перші 1000 — гарантований доступ до закритої альфи.</span><span data-lang="en">Collecting the first fighters. First 1000 get guaranteed closed alpha access.</span></p>
+      </div>
+      <div class="panel p-5">
+        <div class="font-mono text-[10px] uppercase text-[#b89254] mb-2"><span data-lang="uk">▸ через 2 тижні</span><span data-lang="en">▸ in 2 weeks</span></div>
+        <div class="font-display font-bold text-lg text-[#d4ae6c] mb-1"><span data-lang="uk">Закрита альфа</span><span data-lang="en">Closed alpha</span></div>
+        <div class="font-mono text-xs text-[#8a7a64] mb-3"><span data-lang="uk">кінець травня</span><span data-lang="en">end of May</span></div>
+        <p class="text-sm text-[#a89880]"><span data-lang="uk">Базовий PvP, перші підземелля, 2 класи, 1 локація. Зворотний зв'язок — у Discord.</span><span data-lang="en">Core PvP, first dungeons, 2 classes, 1 zone. Feedback in Discord.</span></p>
+      </div>
+      <div class="panel p-5">
+        <div class="font-mono text-[10px] uppercase text-[#a89880] mb-2"><span data-lang="uk">▸ далі</span><span data-lang="en">▸ next</span></div>
+        <div class="font-display font-bold text-lg text-[#d4ae6c] mb-1"><span data-lang="uk">Відкрита бета</span><span data-lang="en">Open beta</span></div>
+        <div class="font-mono text-xs text-[#8a7a64] mb-3"><span data-lang="uk">літо 2026</span><span data-lang="en">summer 2026</span></div>
+        <p class="text-sm text-[#a89880]"><span data-lang="uk">Клани, замки, рейди, Поле ризику, перший сезонний івент. Прогрес зберігається.</span><span data-lang="en">Clans, castles, raids, Risk Field, first seasonal event. Progress is kept.</span></p>
+      </div>
+      <div class="panel p-5">
+        <div class="font-mono text-[10px] uppercase text-[#a89880] mb-2"><span data-lang="uk">▸ потім</span><span data-lang="en">▸ later</span></div>
+        <div class="font-display font-bold text-lg text-[#d4ae6c] mb-1"><span data-lang="uk">Реліз 1.0</span><span data-lang="en">Release 1.0</span></div>
+        <div class="font-mono text-xs text-[#8a7a64] mb-3"><span data-lang="uk">осінь 2026</span><span data-lang="en">fall 2026</span></div>
+        <p class="text-sm text-[#a89880]"><span data-lang="uk">5 класів, 6 локацій, рогалик-режим, турніри з призами, battle-pass, мобільна обгортка.</span><span data-lang="en">5 classes, 6 zones, roguelike mode, prize tournaments, battle-pass, mobile wrapper.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TOP REGISTERED ============ -->
+<section class="py-20">
+  <div class="max-w-5xl mx-auto px-6">
+    <div class="text-center mb-10">
+      <div class="font-mono text-xs uppercase tracking-[0.3em] text-[#b89254] mb-3"><span data-lang="uk">[ реєстр ]</span><span data-lang="en">[ registry ]</span></div>
+      <h2 class="font-display font-black text-3xl text-[#e8dcc0]"><span data-lang="uk">Хто вже зайняв місце</span><span data-lang="en">Who's already claimed a spot</span></h2>
+    </div>
+
+    <div class="panel p-2">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="font-mono text-[10px] uppercase text-[#8a7a64]">
+            <th class="text-left p-3">#</th>
+            <th class="text-left p-3"><span data-lang="uk">Ім'я</span><span data-lang="en">Name</span></th>
+            <th class="text-left p-3"><span data-lang="uk">Реєстрація</span><span data-lang="en">Registered</span></th>
+            <th class="text-right p-3"><span data-lang="uk">Реферали</span><span data-lang="en">Referrals</span></th>
+          </tr>
+        </thead>
+        <tbody class="font-mono text-[#d4c8b0]">
+          <tr class="border-t border-[#36302a]/60"><td class="p-3 text-[#d4ae6c]">001</td><td class="p-3">Reckful <span class="text-[#8a7a64] text-[10px]">★</span></td><td class="p-3 text-[#8a7a64]"><span data-lang="uk">13 травня · 09:42</span><span data-lang="en">May 13 · 09:42</span></td><td class="p-3 text-right text-[#94b566]">+47</td></tr>
+          <tr class="border-t border-[#36302a]/60"><td class="p-3 text-[#d4ae6c]">002</td><td class="p-3">Drakedog</td><td class="p-3 text-[#8a7a64]"><span data-lang="uk">13 травня · 09:44</span><span data-lang="en">May 13 · 09:44</span></td><td class="p-3 text-right text-[#94b566]">+31</td></tr>
+          <tr class="border-t border-[#36302a]/60"><td class="p-3 text-[#d4ae6c]">003</td><td class="p-3">Swifty</td><td class="p-3 text-[#8a7a64]"><span data-lang="uk">13 травня · 09:51</span><span data-lang="en">May 13 · 09:51</span></td><td class="p-3 text-right text-[#94b566]">+22</td></tr>
+          <tr class="border-t border-[#36302a]/60"><td class="p-3 text-[#d4ae6c]">004</td><td class="p-3">Pikaboo</td><td class="p-3 text-[#8a7a64]"><span data-lang="uk">13 травня · 10:03</span><span data-lang="en">May 13 · 10:03</span></td><td class="p-3 text-right text-[#94b566]">+18</td></tr>
+          <tr class="border-t border-[#36302a]/60"><td class="p-3 text-[#d4ae6c]">005</td><td class="p-3">Vurtne</td><td class="p-3 text-[#8a7a64]"><span data-lang="uk">13 травня · 10:14</span><span data-lang="en">May 13 · 10:14</span></td><td class="p-3 text-right text-[#94b566]">+15</td></tr>
+          <tr class="border-t border-[#36302a]/60"><td class="p-3 text-[#8a7a64]">···</td><td class="p-3 text-[#8a7a64]"><span data-lang="uk">ще 1 242 бійців</span><span data-lang="en">1,242 more fighters</span></td><td class="p-3 text-[#8a7a64]">···</td><td class="p-3 text-right text-[#8a7a64]">···</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="text-center mt-6 font-mono text-xs text-[#8a7a64]">
+      <span data-lang="uk">Запроси друга → отримай <span class="text-[#d4ae6c]">+100 🪙</span> на старті. Топ-3 рефери — унікальна броня.</span>
+      <span data-lang="en">Invite a friend → get <span class="text-[#d4ae6c]">+100 🪙</span> at launch. Top-3 referrers — unique armor.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ALPHA PRIVILEGES (NEW) ============ -->
+<section id="alpha" class="py-20 bg-black/30 border-y border-[#36302a]/60 relative">
+  <div class="absolute inset-0 opacity-50" style="background: radial-gradient(ellipse at center, rgba(184,146,84,0.15), transparent 60%);"></div>
+  <div class="max-w-6xl mx-auto px-6 relative">
+    <div class="text-center mb-12">
+      <div class="font-mono text-xs uppercase tracking-[0.3em] text-[#b89254] mb-3"><span data-lang="uk">[ привілеї альфи ]</span><span data-lang="en">[ alpha privileges ]</span></div>
+      <h2 class="font-display font-black text-4xl md:text-5xl text-[#d4ae6c] glow-text">
+        <span data-lang="uk">Альфа — це не просто доступ</span>
+        <span data-lang="en">Alpha isn't just access</span>
+      </h2>
+      <p class="text-[#a89880] mt-4 max-w-2xl mx-auto">
+        <span data-lang="uk">Ти заходиш першим. І це назавжди залишається на твоєму акаунті. Інші вже не зможуть це отримати.</span>
+        <span data-lang="en">You're entering first. And that stays on your account forever. Others won't be able to get this.</span>
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8 items-center">
+      <!-- Left: Perks list -->
+      <div class="panel-gold p-8">
+        <div class="font-mono text-[11px] uppercase tracking-widest text-[#b89254] mb-4"><span data-lang="uk">[ перші 1000 отримують ]</span><span data-lang="en">[ first 1000 get ]</span></div>
+
+        <div class="perk-row">
+          <div class="perk-icon">🏅</div>
+          <div>
+            <div class="font-display font-bold text-[#d4ae6c] mb-1"><span data-lang="uk">Титул «ЗАСНОВНИК» — назавжди</span><span data-lang="en">"FOUNDER" title — forever</span></div>
+            <div class="text-xs text-[#a89880]"><span data-lang="uk">Видно над ніком у бою, чаті, рейтингу. Жоден гравець після тебе не зможе його отримати.</span><span data-lang="en">Visible above your nick in fights, chat, ranking. No one after you can get it.</span></div>
+          </div>
+        </div>
+
+        <div class="perk-row">
+          <div class="perk-icon">👑</div>
+          <div>
+            <div class="font-display font-bold text-[#d4ae6c] mb-1"><span data-lang="uk">Прем-статус на 3 місяці після старту</span><span data-lang="en">Premium status for 3 months after launch</span></div>
+            <div class="text-xs text-[#a89880]"><span data-lang="uk">+25% досвіду, +15% золота, додаткові слоти інвентаря, пріоритетна черга у битвах.</span><span data-lang="en">+25% XP, +15% gold, extra inventory slots, priority queue in fights.</span></div>
+          </div>
+        </div>
+
+        <div class="perk-row">
+          <div class="perk-icon">⚔</div>
+          <div>
+            <div class="font-display font-bold text-[#d4ae6c] mb-1"><span data-lang="uk">Ексклюзивні скіни «Альфа-Бійця»</span><span data-lang="en">Exclusive "Alpha Fighter" skins</span></div>
+            <div class="text-xs text-[#a89880]"><span data-lang="uk">Унікальні скіни зброї та броні — тільки для перших 1000. Більше не випустимо ніколи.</span><span data-lang="en">Unique weapon &amp; armor skins — alpha-1000 only. Never released again.</span></div>
+          </div>
+        </div>
+
+        <div class="perk-row">
+          <div class="perk-icon">🎖</div>
+          <div>
+            <div class="font-display font-bold text-[#d4ae6c] mb-1"><span data-lang="uk">Емоут «/уклін» та банер у профілі</span><span data-lang="en">"/bow" emote &amp; profile banner</span></div>
+            <div class="text-xs text-[#a89880]"><span data-lang="uk">Унікальні соц-айтеми, які видно іншим гравцям. Маленькі деталі, які впізнають свої.</span><span data-lang="en">Unique social items visible to others. Small details — peers will notice.</span></div>
+          </div>
+        </div>
+
+        <div class="perk-row">
+          <div class="perk-icon">🔒</div>
+          <div>
+            <div class="font-display font-bold text-[#d4ae6c] mb-1"><span data-lang="uk">Резервація імені персонажа</span><span data-lang="en">Character name reservation</span></div>
+            <div class="text-xs text-[#a89880]"><span data-lang="uk">Твоє ім'я тримається за тобою у всіх локаціях. Ніхто не забере «Вальдемара», поки ти не залогінишся.</span><span data-lang="en">Your name is held across all zones. No one snags "Valdemar" before you log in.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: visual hook -->
+      <div class="space-y-4">
+        <div class="panel p-6">
+          <div class="font-mono text-[10px] uppercase text-[#b89254] mb-2"><span data-lang="uk">так виглядає ім'я Засновника в чаті</span><span data-lang="en">how a Founder's name looks in chat</span></div>
+          <div class="font-mono text-sm bg-black/40 p-3 border border-[#36302a]">
+            <span class="text-[#8a7a64]">[РЕЙД]</span>
+            <span class="font-display text-[#d4ae6c] text-base">🏅 Вальдемар</span>
+            <span class="text-[#a89880]">: <span data-lang="uk">погнали в Темнолісся</span><span data-lang="en">let's roll Darkwood</span></span>
+          </div>
+          <div class="font-mono text-sm bg-black/40 p-3 border border-[#36302a] mt-2">
+            <span class="text-[#8a7a64]">[РЕЙД]</span>
+            <span class="text-[#d4c8b0]">SomeRandomDude</span>
+            <span class="text-[#a89880]">: <span data-lang="uk">давай</span><span data-lang="en">let's go</span></span>
+          </div>
+        </div>
+
+        <div class="panel p-6 text-center">
+          <div class="font-mono text-[10px] uppercase text-[#b89254] mb-2"><span data-lang="uk">залишилось місць у альфі</span><span data-lang="en">alpha spots remaining</span></div>
+          <div class="font-display font-black text-6xl text-[#d4ae6c] glow-text soft-pulse">753</div>
+          <div class="font-mono text-xs text-[#8a7a64] mt-2"><span data-lang="uk">з 1000 · потім — назавжди закрито</span><span data-lang="en">of 1000 · then — closed forever</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-20">
+  <div class="max-w-3xl mx-auto px-6">
+    <div class="text-center mb-12">
+      <div class="font-mono text-xs uppercase tracking-[0.3em] text-[#b89254] mb-3"><span data-lang="uk">[ питання ]</span><span data-lang="en">[ questions ]</span></div>
+      <h2 class="font-display font-black text-4xl text-[#e8dcc0]">FAQ</h2>
+    </div>
+
+    <div class="space-y-3">
+      <details class="panel p-5 group">
+        <summary class="cursor-pointer font-display font-bold text-[#d4ae6c] flex justify-between items-center list-none">
+          <span><span data-lang="uk">Як працює економіка?</span><span data-lang="en">How does the economy work?</span></span>
+          <span class="text-[#b89254] group-open:rotate-45 transition-transform text-xl">+</span>
+        </summary>
+        <p class="mt-4 text-sm text-[#a89880] leading-relaxed">
+          <span data-lang="uk">Базова гра — безкоштовна. Спорядження, навички, перки купуються за внутрішнє золото, яке заробляється у грі. За реальні гроші можна купити золото або косметику. Баланс не залежить від твого гаманця.</span>
+          <span data-lang="en">The base game is free. Gear, skills, perks — bought with in-game gold you earn by playing. Real money buys gold or cosmetics. Balance doesn't depend on your wallet.</span>
+        </p>
+      </details>
+
+      <details class="panel p-5 group">
+        <summary class="cursor-pointer font-display font-bold text-[#d4ae6c] flex justify-between items-center list-none">
+          <span><span data-lang="uk">Чи буде мобільна версія?</span><span data-lang="en">Will there be a mobile version?</span></span>
+          <span class="text-[#b89254] group-open:rotate-45 transition-transform text-xl">+</span>
+        </summary>
+        <p class="mt-4 text-sm text-[#a89880] leading-relaxed">
+          <span data-lang="uk">Сайт адаптивний з першого дня — повноцінно граєш з телефону. Окрема PWA-обгортка — на релізі 1.0.</span>
+          <span data-lang="en">Site is responsive from day one — fully playable on phone. PWA wrapper at release 1.0.</span>
+        </p>
+      </details>
+
+      <details class="panel p-5 group">
+        <summary class="cursor-pointer font-display font-bold text-[#d4ae6c] flex justify-between items-center list-none">
+          <span><span data-lang="uk">Чи прогрес з альфи перенесеться в реліз?</span><span data-lang="en">Will alpha progress carry over?</span></span>
+          <span class="text-[#b89254] group-open:rotate-45 transition-transform text-xl">+</span>
+        </summary>
+        <p class="mt-4 text-sm text-[#a89880] leading-relaxed">
+          <span data-lang="uk">Альфа — wipe (титули та скіни залишаються). Відкрита бета — повний прогрес зберігається до релізу.</span>
+          <span data-lang="en">Alpha = wipe (titles and skins stay). Open beta = full progress is kept through release.</span>
+        </p>
+      </details>
+
+      <details class="panel p-5 group" open>
+        <summary class="cursor-pointer font-display font-bold text-[#d4ae6c] flex justify-between items-center list-none">
+          <span><span data-lang="uk">Хто за цим стоїть?</span><span data-lang="en">Who's behind this?</span></span>
+          <span class="text-[#b89254] group-open:rotate-45 transition-transform text-xl">+</span>
+        </summary>
+        <p class="mt-4 text-sm text-[#a89880] leading-relaxed">
+          <span data-lang="uk">Ми — <span class="text-[#d4ae6c] font-semibold">Ashgate Studio</span>, інді-команда з України 🇺🇦 з 10+ років досвіду в ігровій індустрії. Виросли на <span class="text-[#d4ae6c]">Classic WoW</span>, <span class="text-[#d4ae6c]">Perfect World</span> і <span class="text-[#d4ae6c]">Guild Wars</span> — тому й робимо ту гру, в яку самі хотіли б повернутися. Жодного NDA з геймдиром: пишіть напряму в Discord, відповідаємо особисто.</span>
+          <span data-lang="en">We're <span class="text-[#d4ae6c] font-semibold">Ashgate Studio</span>, an indie team from Ukraine 🇺🇦 with 10+ years in the game industry. We grew up on <span class="text-[#d4ae6c]">Classic WoW</span>, <span class="text-[#d4ae6c]">Perfect World</span>, and <span class="text-[#d4ae6c]">Guild Wars</span> — so we're building the game we'd want to come back to. No PR layer between you and the game director — DM us on Discord, we reply personally.</span>
+        </p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="relative py-32 overflow-hidden border-t border-[#36302a]/40">
+  <!-- soft radial ambient -->
+  <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(184,146,84,0.07), transparent 70%);"></div>
+
+  <div class="max-w-4xl mx-auto px-6 relative">
+    <!-- thin top label -->
+    <div class="flex items-center justify-center gap-4 mb-10">
+      <div class="h-px w-16 bg-[#36302a]"></div>
+      <div class="font-mono text-[10px] uppercase tracking-[0.4em] text-[#8a7a64]">
+        <span data-lang="uk">альфа · травень 2026</span>
+        <span data-lang="en">alpha · may 2026</span>
+      </div>
+      <div class="h-px w-16 bg-[#36302a]"></div>
+    </div>
+
+    <!-- Massive heading -->
+    <h2 class="text-center font-display text-6xl md:text-8xl text-[#e8dcc0] leading-[0.95] tracking-tight">
+      <span data-lang="uk"><em class="text-[#b89254] not-italic font-medium">14 днів.</em><br/>1000 місць.<br/>Назавжди.</span>
+      <span data-lang="en"><em class="text-[#b89254] not-italic font-medium">14 days.</em><br/>1000 spots.<br/>Forever.</span>
+    </h2>
+
+    <p class="text-center text-[#a89880] text-lg mt-8 max-w-xl mx-auto leading-relaxed">
+      <span data-lang="uk">Титул «Засновник», прем-статус на 3 місяці, ексклюзивні скіни й резервація імені. Перші 1000 — отримують усе. Решта — стають у чергу.</span>
+      <span data-lang="en">"Founder" title, 3-month premium, exclusive skins, and name reservation. First 1000 get it all. Everyone else waits in line.</span>
+    </p>
+
+    <!-- Form -->
+    <form class="mt-12 max-w-lg mx-auto" onsubmit="event.preventDefault(); alert('OK');">
+      <div class="flex flex-col sm:flex-row gap-2 p-2 bg-black/40 border border-[#36302a]">
+        <input type="email" required
+               data-placeholder-uk="твоя.пошта@..."
+               data-placeholder-en="your.email@..."
+               class="flex-1 bg-transparent px-4 py-3 font-mono text-sm text-[#e8dcc0] placeholder:text-[#5a4a38] focus:outline-none"/>
+        <button type="submit" class="btn-gold font-mono font-semibold uppercase tracking-[0.2em] px-7 py-3 text-xs whitespace-nowrap">
+          <span data-lang="uk">→ зайняти місце</span>
+          <span data-lang="en">→ claim spot</span>
+        </button>
+      </div>
+      <div class="mt-4 flex items-center justify-center gap-6 font-mono text-[11px] text-[#8a7a64] flex-wrap">
+        <span class="flex items-center gap-2">
+          <span class="w-1 h-1 bg-[#6a8a4a] rounded-full"></span>
+          <span data-lang="uk">без спаму</span><span data-lang="en">no spam</span>
+        </span>
+        <span class="flex items-center gap-2">
+          <span class="w-1 h-1 bg-[#6a8a4a] rounded-full"></span>
+          <span data-lang="uk">один лист — на старті</span><span data-lang="en">one email — at launch</span>
+        </span>
+        <span class="flex items-center gap-2">
+          <span class="w-1 h-1 bg-[#6a8a4a] rounded-full"></span>
+          <span data-lang="uk">скасування одним кліком</span><span data-lang="en">one-click unsubscribe</span>
+        </span>
+      </div>
+    </form>
+
+    <!-- Alt path -->
+    <div class="mt-10 text-center font-mono text-xs text-[#8a7a64]">
+      <span data-lang="uk">або приєднайся у </span>
+      <span data-lang="en">or join us on </span>
+      <a href="#" class="text-[#d4ae6c] hover:text-[#e8dcc0] underline underline-offset-4 decoration-[#36302a]">Discord</a>
+      <span class="mx-2 text-[#36302a]">·</span>
+      <a href="#" class="text-[#d4ae6c] hover:text-[#e8dcc0] underline underline-offset-4 decoration-[#36302a]">Telegram</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t border-[#36302a]/60 py-10">
+  <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[#8a7a64]">
+    <div class="flex items-center gap-3">
+      <div class="w-7 h-7 rounded-sm bg-gradient-to-br from-[#5a1e1e] to-[#3a0a0a] border border-[#b89254] grid place-items-center font-display font-bold text-[#d4ae6c] text-xs leading-none">R</div>
+      <div class="font-mono text-xs leading-tight">
+        <div>© 2026 <span class="text-[#a89880]">ROVGARD</span> · <span class="text-[#a89880]">Ashgate Studio</span></div>
+        <div class="text-[10px] mt-0.5">
+          <span data-lang="uk">зроблено в Україні 🇺🇦</span>
+          <span data-lang="en">made in Ukraine 🇺🇦</span>
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-5 font-mono text-xs uppercase">
+      <a href="#" class="hover:text-[#d4ae6c]">Discord</a>
+      <a href="#" class="hover:text-[#d4ae6c]">Telegram</a>
+      <a href="#" class="hover:text-[#d4ae6c]">YouTube</a>
+      <a href="#" class="hover:text-[#d4ae6c]">Privacy</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ BACK TO TOP (SWORD) ============ -->
+<button id="back-to-top" type="button" aria-label="Back to top" title="">
+  <svg viewBox="0 0 48 64" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" width="24" height="32">
+    <!-- blade tip pointing up -->
+    <path d="M21 7 L24 3 L27 7"/>
+    <!-- blade -->
+    <line x1="24" y1="6" x2="24" y2="40"/>
+    <!-- blade highlight -->
+    <line x1="22" y1="10" x2="22" y2="36" opacity="0.4"/>
+    <!-- crossguard -->
+    <line x1="14" y1="40" x2="34" y2="40" stroke-width="1.8"/>
+    <!-- guard ornament dots -->
+    <circle cx="14" cy="40" r="1.2" fill="currentColor"/>
+    <circle cx="34" cy="40" r="1.2" fill="currentColor"/>
+    <!-- grip -->
+    <line x1="24" y1="40" x2="24" y2="55"/>
+    <!-- grip wrap marks -->
+    <line x1="22" y1="44" x2="26" y2="44" opacity="0.5"/>
+    <line x1="22" y1="48" x2="26" y2="48" opacity="0.5"/>
+    <line x1="22" y1="52" x2="26" y2="52" opacity="0.5"/>
+    <!-- pommel -->
+    <circle cx="24" cy="58" r="3" fill="currentColor"/>
+  </svg>
+</button>
+
+<script>
+  (function () {
+    const root = document.documentElement;
+
+    // === Language toggle ===
+    const stored = localStorage.getItem('lang');
+    const initial = (stored === 'uk' || stored === 'en') ? stored : 'uk';
+
+    function applyPlaceholders(lang) {
+      document.querySelectorAll('[data-placeholder-uk]').forEach(el => {
+        el.placeholder = lang === 'uk'
+          ? el.getAttribute('data-placeholder-uk')
+          : el.getAttribute('data-placeholder-en');
+      });
+    }
+
+    function setLang(lang) {
+      root.setAttribute('data-lang', lang);
+      root.setAttribute('lang', lang === 'uk' ? 'uk' : 'en');
+      localStorage.setItem('lang', lang);
+      applyPlaceholders(lang);
+    }
+
+    setLang(initial);
+    document.getElementById('lang-uk').addEventListener('click', () => setLang('uk'));
+    document.getElementById('lang-en').addEventListener('click', () => setLang('en'));
+
+    // === Reveal-on-scroll animations ===
+    const revealTargets = document.querySelectorAll('section > div, .panel, .pve-card');
+    revealTargets.forEach(el => el.classList.add('reveal'));
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
+
+    revealTargets.forEach(el => io.observe(el));
+
+    // === Back-to-top sword button ===
+    const btn = document.getElementById('back-to-top');
+    let ticking = false;
+    function onScroll() {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (window.scrollY > 600) btn.classList.add('visible');
+          else btn.classList.remove('visible');
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    btn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  })();
+</script>
+
+</body>
+</html>
